@@ -1,37 +1,54 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../config/app_config.dart';
-import '../models/schedule.dart';
+import '../models/execution.dart';
 
-class ScheduleService {
-  static String get _url => '${AppConfig.host}/schedule/data';
+class ExecutionService {
+  static String get _url => '${AppConfig.host}/execution/data';
   static const int _maxRetries = 3;
   static const Duration _timeout = Duration(seconds: 30);
 
-  static Future<List<Schedule>> fetchSchedules({String? customUrl}) async {
-    final url = customUrl ?? _url;
-    
+  static Future<List<Execution>> fetchExecutions({
+    required String section,
+    required String date,
+    int page = 1,
+    String search = '',
+  }) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        debugPrint('[ScheduleService] Attempt $attempt/$_maxRetries - Fetching: $url');
-        
-        final uri = Uri.parse(url);
+        final uri = Uri.parse(_url).replace(
+          queryParameters: {
+            'section': section,
+            'date': date,
+            'page': page.toString(),
+            if (search.isNotEmpty) 'search': search,
+          },
+        );
+
+        debugPrint(
+          '[ExecutionService] Attempt $attempt/$_maxRetries - GET: $uri',
+        );
+
         final response = await http.get(uri).timeout(_timeout);
 
         if (response.statusCode == 200) {
-          debugPrint('[ScheduleService] Success! Status: ${response.statusCode}');
+          debugPrint(
+            '[ExecutionService] Success! Status: ${response.statusCode}',
+          );
           final List<dynamic> jsonList = json.decode(response.body);
-          return jsonList.map((json) => Schedule.fromJson(json)).toList();
+          return jsonList
+              .map((j) => Execution.fromJson(j as Map<String, dynamic>))
+              .toList();
         } else {
           throw Exception(
             'HTTP ${response.statusCode}: ${response.reasonPhrase}',
           );
         }
       } on TimeoutException {
-        debugPrint('[ScheduleService] Timeout on attempt $attempt');
+        debugPrint('[ExecutionService] Timeout on attempt $attempt');
         if (attempt == _maxRetries) {
           throw Exception(
             'Timeout setelah $attempt percobaan. Server tidak merespons dalam 30 detik.',
@@ -39,7 +56,9 @@ class ScheduleService {
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } on SocketException catch (e) {
-        debugPrint('[ScheduleService] SocketException on attempt $attempt: $e');
+        debugPrint(
+          '[ExecutionService] SocketException on attempt $attempt: $e',
+        );
         if (attempt == _maxRetries) {
           throw Exception(
             'Gagal terhubung ke server. '
@@ -52,7 +71,9 @@ class ScheduleService {
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } on HttpException catch (e) {
-        debugPrint('[ScheduleService] HttpException on attempt $attempt: $e');
+        debugPrint(
+          '[ExecutionService] HttpException on attempt $attempt: $e',
+        );
         if (attempt == _maxRetries) {
           throw Exception(
             'HTTP Error: ${e.message}\n\n'
@@ -64,7 +85,9 @@ class ScheduleService {
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } catch (e) {
-        debugPrint('[ScheduleService] Unknown error on attempt $attempt: $e');
+        debugPrint(
+          '[ExecutionService] Unknown error on attempt $attempt: $e',
+        );
         if (attempt == _maxRetries) {
           throw Exception('Error: $e');
         }

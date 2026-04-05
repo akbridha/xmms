@@ -16,7 +16,7 @@ class Schedule {
       id: json['id'] as int,
       date: json['date'] as String,
       valid: json['valid'] as int,
-      equipmentCode: json['equipment_code'] as String,
+      equipmentCode: json['eq_numb'] as String,
     );
   }
 }
