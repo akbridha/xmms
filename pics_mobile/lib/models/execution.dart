@@ -1,3 +1,5 @@
+import '../config/app_config.dart';
+
 class Execution {
   final String date;
   final String section;
@@ -33,13 +35,50 @@ class Execution {
   String get scheduleId =>
       scheduleResults.keys.isNotEmpty ? scheduleResults.keys.first : '';
 
+  List<String> get targetPartOfChecks =>
+      AppConfig.partOfCheckBySection[section] ?? const <String>[];
+
+  Set<String> get coveredPartOfChecks {
+    final covered = <String>{};
+
+    for (final resultRows in scheduleResults.values) {
+      for (final row in resultRows) {
+        if (row.length < 2) continue;
+
+        final rawPart = row[1]?.toString() ?? '';
+        if (rawPart.isEmpty) continue;
+
+        covered.add(AppConfig.normalizePartOfCheck(rawPart));
+      }
+    }
+
+    return covered;
+  }
+
+  Map<String, bool> get partOfCheckStatus {
+    final status = <String, bool>{};
+    final covered = coveredPartOfChecks;
+
+    for (final part in targetPartOfChecks) {
+      status[part] = covered.contains(part);
+    }
+
+    return status;
+  }
+
+  int get targetPocCount => targetPartOfChecks.length;
+
+  int get fulfilledPocCount =>
+      partOfCheckStatus.values.where((isDone) => isDone).length;
+
+  int get resultRowCount =>
+      scheduleResults.values.fold<int>(0, (sum, rows) => sum + rows.length);
+
   int get pocCount {
-    if (scheduleResults.isEmpty) return 0;
-    return scheduleResults.values.first.length;
+    return targetPocCount;
   }
 
   bool get hasResults {
-    if (scheduleResults.isEmpty) return false;
-    return scheduleResults.values.first.isNotEmpty;
+    return resultRowCount > 0;
   }
 }

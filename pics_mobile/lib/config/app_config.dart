@@ -30,6 +30,29 @@ class AppConfig {
     'PLANT TYRE SUPPORT',
   ];
 
+  static const Map<String, List<String>> partOfCheckBySection = {
+    'PLANT PRIME MOVER': [
+      'BAGIAN ATAS',
+      'BAGIAN BAWAH',
+      'CABIN',
+    ],
+    'PLANT VESSEL': [
+      'BAGIAN ATAS',
+      'BAGIAN BAWAH',
+      'HUB DRUM TEMPERATURE',
+      'GREASING SET TRAILER',
+    ],
+  };
+
+  static const Map<String, String> partOfCheckAliases = {
+    'BAGIAN CABIN': 'CABIN',
+  };
+
+  static String normalizePartOfCheck(String raw) {
+    final normalized = raw.trim().toUpperCase();
+    return partOfCheckAliases[normalized] ?? normalized;
+  }
+
   static const List<AppUser> users = [
     AppUser(name: 'Admin Dev', role: 'Admin', section: 'PLANT PRIME MOVER'),
     AppUser(name: 'Mekanik A', role: 'Mekanik', section: 'PLANT PRIME MOVER'),

@@ -53,6 +53,38 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
     }
   }
 
+  Widget _buildPocStatusIcons(Execution execution) {
+    final statuses = execution.partOfCheckStatus.entries.toList();
+
+    if (statuses.isEmpty) {
+      final isDone = execution.hasResults;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isDone ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: isDone ? Colors.green : Colors.grey,
+            size: 18,
+          ),
+        ],
+      );
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: statuses
+          .map(
+            (entry) => Icon(
+              entry.value ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: entry.value ? Colors.green : Colors.grey,
+              size: 18,
+            ),
+          )
+          .toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -229,20 +261,17 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
                           ),
                         );
                       },
-                      leading: CircleAvatar(
-                        backgroundColor:
-                            execution.hasResults ? Colors.green : Colors.grey,
-                        child: Icon(
-                          execution.hasResults
-                              ? Icons.check
-                              : Icons.pending_outlined,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
                       title: Text(execution.eqNumb),
-                      subtitle: Text(
-                        '${execution.date} • POC: ${execution.pocCount}',
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${execution.date} • POC: ${execution.fulfilledPocCount}/${execution.targetPocCount} ',
+                          ),
+                          const SizedBox(height: 6),
+                          _buildPocStatusIcons(execution),
+                        ],
                       ),
                       trailing: const Icon(Icons.chevron_right),
                     ),
