@@ -1,0 +1,25 @@
+{
+  "name": "mcp-mysql-pics-mobile",
+  "version": "1.0.0",
+  "description": "MCP Server for PicsMobile MySQL Database (Read-Only)",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "mysql2": "^3.11.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "mysql",
+    "pics-mobile",
+    "readonly"
+  ],
+  "author": "",
+  "license": "MIT"
+}

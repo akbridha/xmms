@@ -1,0 +1,15 @@
+{
+  "github.copilot.chat.mcp.servers": {
+    "pics-mobile-mysql": {
+      "command": "node",
+      "args": ["C:/Users/Lenovo/Main/PicsMobile/pics_mobile/mcp-mysql/server.mjs"],
+      "env": {
+        "MYSQL_HOST": "127.0.0.1",
+        "MYSQL_PORT": "33306",
+        "MYSQL_USER": "mcp_read",
+        "MYSQL_PASSWORD": "readOnly123",
+        "MYSQL_DATABASE": "db_pltmp_doc"
+      }
+    }
+  }
+}

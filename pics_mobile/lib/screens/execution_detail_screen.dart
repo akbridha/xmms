@@ -97,7 +97,7 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
             _isSyncing
                 ? 'Syncing...'
                 : hasUnsynced
-                    ? 'Sync ($�unsyncedCount)'
+                    ? 'Sync ($_unsyncedCount)'
                     : 'Synced',
             style: const TextStyle(color: Colors.white),
           ),
