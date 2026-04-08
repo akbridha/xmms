@@ -19,7 +19,7 @@ class AppConfig {
   // static const String host = 'http://192.168.1.10:9090/api';
 
   // For local API on emulator only.
-  static const String host = 'http://localhost:9090/api';
+  static const String host = 'http://10.0.2.2:9090/api';
 
   // For public API.
   // static const String host = 'https://app-saptaindra.msappproxy.net/PlantAdmo/api';
@@ -34,7 +34,7 @@ class AppConfig {
     'PLANT PRIME MOVER': [
       'BAGIAN ATAS',
       'BAGIAN BAWAH',
-      'CABIN',
+      'BAGIAN CABIN',
     ],
     'PLANT VESSEL': [
       'BAGIAN ATAS',
@@ -52,6 +52,14 @@ class AppConfig {
     final normalized = raw.trim().toUpperCase();
     return partOfCheckAliases[normalized] ?? normalized;
   }
+
+  static const List<String> inspectors = [
+    '0115118',
+    '4111682',
+    '80001668',
+  ];
+
+  static String currentInspector = inspectors.first;
 
   static const List<AppUser> users = [
     AppUser(name: 'Admin Dev', role: 'Admin', section: 'PLANT PRIME MOVER'),

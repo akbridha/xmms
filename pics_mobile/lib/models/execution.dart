@@ -1,4 +1,5 @@
 import '../config/app_config.dart';
+import '../services/local_storage_service.dart';
 
 class Execution {
   final String date;
@@ -80,5 +81,12 @@ class Execution {
 
   bool get hasResults {
     return resultRowCount > 0;
+  }
+
+  /// Get count of unsynced (pending) submissions for this schedule
+  /// Returns a Future since it requires database query
+  Future<int> getUnsyncedCount() async {
+    if (scheduleId.isEmpty) return 0;
+    return await LocalStorageService.getUnsyncedCountBySchedule(scheduleId);
   }
 }

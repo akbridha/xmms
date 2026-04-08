@@ -68,7 +68,31 @@ class _HomeScreenState extends State<HomeScreen> {
               'Role: ${AppConfig.currentUser.role} • Section: ${AppConfig.currentUser.section}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('Inspector (NRP): '),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: AppConfig.currentInspector,
+                  items: AppConfig.inspectors
+                      .map(
+                        (nrp) => DropdownMenuItem<String>(
+                          value: nrp,
+                          child: Text(nrp),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() {
+                      AppConfig.currentInspector = value;
+                    });
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Expanded(
               child: _buildMenuCard(
                 icon: Icons.calendar_month,
