@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/landing_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -46,7 +46,7 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
       future: _initialization,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          return const HomeScreen();
+          return const LandingScreen();
         }
 
         return Scaffold(
