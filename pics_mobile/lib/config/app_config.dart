@@ -1,3 +1,5 @@
+import '../models/user.dart';
+
 class AppUser {
   final String name;
   final String role;
@@ -77,4 +79,24 @@ class AppConfig {
   ];
 
   static AppUser currentUser = users.first;
+
+  // Logged-in user from API
+  static User? loggedInUser;
+
+  // Set logged-in user and update inspector
+  static void setLoggedInUser(User user) {
+    loggedInUser = user;
+    currentInspector = user.nrp;
+  }
+
+  // Clear logged-in user
+  static void clearLoggedInUser() {
+    loggedInUser = null;
+    currentInspector = inspectors.first;
+  }
+
+  // Get current inspector (from logged-in user if available)
+  static String getInspector() {
+    return loggedInUser?.nrp ?? currentInspector;
+  }
 }

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../config/app_config.dart';
+import '../services/auth_service.dart';
 import 'home_screen.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -14,6 +16,9 @@ class LandingScreen extends StatefulWidget {
 class _LandingScreenState extends State<LandingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _gearController;
+  late final TextEditingController _nrpController;
+  late final TextEditingController _passwordController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -22,12 +27,72 @@ class _LandingScreenState extends State<LandingScreen>
       vsync: this,
       duration: const Duration(seconds: 14),
     )..repeat();
+    _nrpController = TextEditingController();
+    _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _gearController.dispose();
+    _nrpController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    final nrp = _nrpController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // Validation
+    if (nrp.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('NRP tidak boleh kosong')),
+      );
+      return;
+    }
+
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password tidak boleh kosong')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await AuthService.login(
+        nrp: nrp,
+        password: password,
+      );
+
+      if (!mounted) return;
+
+      if (response.success && response.data != null) {
+        // Save logged-in user to global state
+        AppConfig.setLoggedInUser(response.data!);
+
+        // Navigate to home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => const HomeScreen(),
+          ),
+        );
+      } else {
+        // Show error message from API
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response.message)),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login gagal: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -82,8 +147,11 @@ class _LandingScreenState extends State<LandingScreen>
                   ),
                   const SizedBox(height: 24),
                   TextField(
+                    controller: _nrpController,
+                    enabled: !_isLoading,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: 'Username',
+                      labelText: 'NRP',
                       prefixIcon: const Icon(Icons.person_outline),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -92,6 +160,8 @@ class _LandingScreenState extends State<LandingScreen>
                   ),
                   const SizedBox(height: 14),
                   TextField(
+                    controller: _passwordController,
+                    enabled: !_isLoading,
                     obscureText: true,
                     decoration: InputDecoration(
                       labelText: 'Password',
@@ -105,15 +175,17 @@ class _LandingScreenState extends State<LandingScreen>
                   SizedBox(
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const HomeScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text('Login'),
+                      onPressed: _isLoading ? null : _handleLogin,
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Login'),
                     ),
                   ),
                 ],

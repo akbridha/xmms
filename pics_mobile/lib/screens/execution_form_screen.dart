@@ -78,7 +78,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         idSchedule: widget.idSchedule,
         partOfCheck: widget.partOfCheck,
         items: _items,
-        inspector: AppConfig.currentInspector,
+        inspector: AppConfig.getInspector(),
       );
 
       if (!mounted) return;
