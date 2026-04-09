@@ -149,15 +149,12 @@ class ValidationService {
   /// Note: Using GET method as per backend requirement (unusual but as specified)
   static Future<bool> submitApprovalAction({
     required String scheduleId,
-    required String poc,
     required String nrp,
   }) async {
     try {
-      // TODO: Replace with actual approval endpoint URL
-      final uri = Uri.parse('${AppConfig.host}/validation/approve').replace(
+      final uri = Uri.parse('${AppConfig.host}/validation/validate').replace(
         queryParameters: {
           'schedule_id': scheduleId,
-          'poc': poc,
           'nrp': nrp,
         },
       );

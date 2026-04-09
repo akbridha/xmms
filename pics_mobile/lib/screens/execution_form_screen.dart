@@ -23,6 +23,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   late Future<FormClaimResponse> _futureForm;
   List<FormItem> _items = [];
   bool _submitting = false;
+  bool _showErrors = false;
 
   static const List<String> _checkOptions = ['v', 'x', 'o'];
   static const Map<String, String> _checkLabels = {
@@ -53,11 +54,17 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     });
   }
 
-  bool get _allFilled => _items.every((item) =>
-      item.inputValue != null && item.inputValue!.isNotEmpty);
+  bool get _allFilled => _items.where((item) => item.hasInput).every(
+      (item) => item.inputValue != null && item.inputValue!.isNotEmpty);
 
   Future<void> _submit() async {
+    // Stop all running timers
+    for (final item in _items) {
+      item.stopTimer();
+    }
+
     if (!_allFilled) {
+      setState(() => _showErrors = true);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Harap isi semua item sebelum submit')),
       );
@@ -232,25 +239,53 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   }
 
   Widget _buildFormItemCard(FormItem item) {
+    final hasError = _showErrors && item.hasInput && !item.isFilled;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      shape: hasError
+          ? RoundedRectangleBorder(
+              side: const BorderSide(color: Colors.red, width: 1.5),
+              borderRadius: BorderRadius.circular(12),
+            )
+          : null,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item.detailsItems,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    item.detailsItems,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
+                ),
+                if (hasError)
+                  const Icon(Icons.error, color: Colors.red, size: 20),
+              ],
             ),
             const SizedBox(height: 4),
-            Text(
-              '${item.activity} • ${item.value}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${item.activity} • ${item.value}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
                   ),
+                ),
+                if (item.durationMs > 0)
+                  Text(
+                    '${(item.durationMs / 1000).toStringAsFixed(1)}s',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey,
+                        ),
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             if (item.isCheck) _buildCheckInput(item),
@@ -272,7 +307,9 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
             selected: selected,
             onSelected: (_) {
               setState(() {
+                item.startTimer();
                 item.inputValue = option;
+                item.stopTimer();
               });
             },
           ),
@@ -283,13 +320,22 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
 
   Widget _buildMeasureInput(FormItem item) {
     return TextField(
+      keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: 'Masukkan nilai ${item.value}',
         border: const OutlineInputBorder(),
         isDense: true,
+        errorText: (_showErrors && !item.isFilled) ? 'Wajib diisi' : null,
       ),
+      onTap: () {
+        item.startTimer();
+      },
       onChanged: (val) {
         item.inputValue = val;
+      },
+      onEditingComplete: () {
+        item.stopTimer();
+        FocusScope.of(context).nextFocus();
       },
     );
   }

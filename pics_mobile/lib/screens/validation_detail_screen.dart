@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 import '../models/validation_item.dart' as models;
 import '../models/validation_detail.dart';
 import '../services/validation_service.dart';
@@ -54,17 +55,6 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
   }
 
   Future<void> _handleApproval(bool isApproved) async {
-    // Check if POC is selected
-    if (_selectedPoc == null || _selectedPoc!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pilih POC terlebih dahulu'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
@@ -98,12 +88,11 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
     });
 
     try {
-      // TODO: Replace with actual NRP from user session/SharedPreferences
-      const userNrp = '0000000'; // Placeholder NRP
+      // Get NRP from global config
+      final userNrp = AppConfig.currentInspector;
       
       final success = await ValidationService.submitApprovalAction(
         scheduleId: widget.validationItem.scheduleId.toString(),
-        poc: _selectedPoc!,
         nrp: userNrp,
       );
 
@@ -239,7 +228,7 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
             ),
             const SizedBox(height: 16),
 
-            // POC Selection
+            // POC Selection (Informational)
             if (detail.data.isNotEmpty) ...[
               Card(
                 child: Padding(
@@ -248,9 +237,16 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'PILIH POC UNTUK APPROVAL',
+                        'DAFTAR POC',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Pilih untuk melihat detail POC (opsional)',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
                             ),
                       ),
                       const SizedBox(height: 12),

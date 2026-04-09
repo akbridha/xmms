@@ -11,6 +11,21 @@ class FormItem {
   final int valid;
 
   String? inputValue;
+  DateTime? _startTime;
+  int durationMs = 0;
+
+  void startTimer() {
+    _startTime ??= DateTime.now();
+  }
+
+  void stopTimer() {
+    if (_startTime != null) {
+      durationMs += DateTime.now().difference(_startTime!).inMilliseconds;
+      _startTime = null;
+    }
+  }
+
+  bool get isFilled => inputValue != null && inputValue!.isNotEmpty;
 
   FormItem({
     required this.id,
@@ -41,14 +56,17 @@ class FormItem {
     );
   }
 
-  bool get isCheck => activity.toLowerCase() == 'check';
+  bool get isMeasure => activity.trim().toLowerCase() == 'measure' || activity.trim().toLowerCase() == 'add';
 
-  bool get isMeasure => activity.toLowerCase() == 'measure';
+  bool get isCheck => !isMeasure;
+
+  bool get hasInput => true;
 
   Map<String, dynamic> toSubmitJson() {
     return {
       'id': id,
       'input_value': inputValue ?? '',
+      'duration_ms': durationMs,
     };
   }
 }
