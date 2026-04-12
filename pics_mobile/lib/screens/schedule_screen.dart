@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/schedule.dart';
 import '../services/schedule_service.dart';
+import '../widgets/filter_header_card.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -123,30 +124,67 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _selectedDate == null
-                            ? 'Filter: Semua tanggal'
-                            : 'Filter: ${_formatDate(_selectedDate!)}',
-                        style: Theme.of(context).textTheme.bodyMedium,
+                padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                child: FilterHeaderCard(
+                  title: 'Filter Jadwal',
+                  subtitle: 'Pilih tanggal untuk fokus pada jadwal yang relevan.',
+                  icon: Icons.event_note_rounded,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Tanggal', style: FilterHeaderCard.labelStyle),
+                      const SizedBox(height: 8),
+                      FilterControlSurface(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today_outlined, size: 18),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _selectedDate == null
+                                    ? 'Semua tanggal'
+                                    : _formatDate(_selectedDate!),
+                                style: FilterHeaderCard.valueStyle.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: _pickDate,
-                      icon: const Icon(Icons.date_range),
-                      label: const Text('Pilih Tanggal'),
-                    ),
-                    const SizedBox(width: 8),
-                    if (_selectedDate != null)
-                      IconButton(
-                        onPressed: _clearDateFilter,
-                        tooltip: 'Hapus filter',
-                        icon: const Icon(Icons.clear),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: _pickDate,
+                            style: FilterHeaderCard.actionButtonStyle,
+                            icon: const Icon(Icons.date_range),
+                            label: const Text('Pilih Tanggal'),
+                          ),
+                          if (_selectedDate != null)
+                            TextButton.icon(
+                              onPressed: _clearDateFilter,
+                              style: TextButton.styleFrom(
+                                foregroundColor:
+                                    FilterHeaderCard.secondaryForegroundColor,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 12,
+                                ),
+                              ),
+                              icon: const Icon(Icons.close),
+                              label: const Text('Hapus Filter'),
+                            ),
+                        ],
                       ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Padding(

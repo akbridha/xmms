@@ -149,7 +149,7 @@ class _LandingScreenState extends State<LandingScreen>
                   TextField(
                     controller: _nrpController,
                     enabled: !_isLoading,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(
                       labelText: 'NRP',
                       prefixIcon: const Icon(Icons.person_outline),

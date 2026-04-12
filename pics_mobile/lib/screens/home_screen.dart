@@ -3,6 +3,7 @@ import '../config/app_config.dart';
 import 'schedule_screen.dart';
 import 'execution_screen.dart';
 import 'approval_screen.dart';
+import 'landing_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,103 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Check if user is logged in, redirect to login if not
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (AppConfig.loggedInUser == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => const LandingScreen(),
+          ),
+        );
+      }
+    });
+  }
+
+  void _showUserProfileDialog() {
+    final user = AppConfig.loggedInUser;
+    if (user == null) return;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Profil User'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProfileRow('NRP', user.nrp),
+                _buildProfileRow('Nama User', user.nama ?? 'N/A'),
+                _buildProfileRow('Section', user.section ?? 'N/A'),
+                _buildProfileRow('Perusahaan', user.perusahaan ?? 'N/A'),
+                _buildProfileRow('Jabatan', user.jabatan ?? 'N/A'),
+                _buildProfileRow('Job Group', user.jobGroup ?? 'N/A'),
+                _buildProfileRow('Job Rank', user.jobRank ?? 'N/A'),
+                _buildProfileRow('Role', user.role ?? 'N/A'),
+                _buildProfileRow('Type User', user.typeUser ?? 'N/A'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Tutup'),
+            ),
+            FilledButton.icon(
+              onPressed: () {
+                AppConfig.clearLoggedInUser();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const LandingScreen(),
+                  ),
+                  (route) => false,
+                );
+              },
+              icon: const Icon(Icons.logout),
+              label: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = AppConfig.loggedInUser;
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final menuItems = [
       _HomeMenuItem(
         icon: Icons.calendar_month,
@@ -43,20 +140,22 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      _HomeMenuItem(
-        icon: Icons.approval,
-        title: 'Approval',
-        description: 'Persetujuan hasil inspeksi dan tindak lanjut',
-        color: Colors.green,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => const ApprovalScreen(),
-            ),
-          );
-        },
-      ),
+      // Conditionally show Approval menu only for 'glup' type_user or 'administrator' role
+      if (user.jobRank == 'GROUP LEADER (SETARA)' || user.role == 'administrator')
+        _HomeMenuItem(
+          icon: Icons.approval,
+          title: 'Approval',
+          description: 'Persetujuan hasil inspeksi dan tindak lanjut',
+          color: Colors.green,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const ApprovalScreen(),
+              ),
+            );
+          },
+        ),
     ];
 
     return Scaffold(
@@ -106,39 +205,36 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Selamat datang, ${AppConfig.currentUser.name}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            Text(
-              'Role: ${AppConfig.currentUser.role} • Section: ${AppConfig.currentUser.section}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                const Text('Inspector (NRP): '),
-                DropdownButton<String>(
-                  value: AppConfig.currentInspector,
-                  items: AppConfig.inspectors
-                      .map(
-                        (nrp) => DropdownMenuItem<String>(
-                          value: nrp,
-                          child: Text(nrp),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      AppConfig.currentInspector = value;
-                    });
-                  },
+            InkWell(
+              onTap: _showUserProfileDialog,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selamat datang, ${user.nama ?? "User"}',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          Text(
+                            'Section: ${user.section ?? "N/A"}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.account_circle,
+                      size: 32,
+                      color: Colors.grey,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(

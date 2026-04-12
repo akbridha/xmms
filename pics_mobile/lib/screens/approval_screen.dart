@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../models/validation_item.dart';
 import '../services/validation_service.dart';
+import '../widgets/filter_header_card.dart';
 import 'validation_detail_screen.dart';
 
 class ApprovalScreen extends StatefulWidget {
@@ -96,59 +97,90 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
       ),
       body: Column(
         children: [
-          // Filters
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Row(
-              children: [
-                const Text('Section: '),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: _selectedSection,
-                    isExpanded: true,
-                    items: [
-                      const DropdownMenuItem<String>(
-                        value: 'All',
-                        child: Text('All'),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: FilterHeaderCard(
+              title: 'Filter Approval',
+              subtitle: 'Saring data approval berdasarkan section dan tanggal.',
+              icon: Icons.rule_folder_outlined,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Section', style: FilterHeaderCard.labelStyle),
+                  const SizedBox(height: 8),
+                  FilterControlSurface(
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedSection,
+                        isExpanded: true,
+                        dropdownColor: FilterHeaderCard.menuColor,
+                        style: FilterHeaderCard.valueStyle,
+                        iconEnabledColor: FilterHeaderCard.foregroundColor,
+                        items: [
+                          const DropdownMenuItem<String>(
+                            value: 'All',
+                            child: Text(
+                              'All',
+                              style: FilterHeaderCard.valueStyle,
+                            ),
+                          ),
+                          ...AppConfig.sections.map(
+                            (s) => DropdownMenuItem<String>(
+                              value: s,
+                              child: Text(
+                                s,
+                                overflow: TextOverflow.ellipsis,
+                                style: FilterHeaderCard.valueStyle,
+                              ),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _selectedSection = value;
+                          });
+                        },
                       ),
-                      ...AppConfig.sections.map(
-                        (s) => DropdownMenuItem<String>(
-                          value: s,
-                          child: Text(s, overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text('Tanggal', style: FilterHeaderCard.labelStyle),
+                  const SizedBox(height: 8),
+                  FilterControlSurface(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today_outlined, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _formatDisplayDate(_selectedDate),
+                            style: FilterHeaderCard.valueStyle.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() {
-                        _selectedSection = value;
-                      });
-                    },
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: OutlinedButton.icon(
+                      onPressed: _pickDate,
+                      style: FilterHeaderCard.actionButtonStyle,
+                      icon: const Icon(Icons.date_range),
+                      label: const Text('Pilih Tanggal'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Tanggal: ${_formatDisplayDate(_selectedDate)}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.date_range),
-                  label: const Text('Pilih Tanggal'),
-                ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
           // Content
           Expanded(child: _buildContent()),
         ],

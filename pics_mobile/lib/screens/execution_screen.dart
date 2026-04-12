@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../models/execution.dart';
 import '../services/execution_service.dart';
+import '../widgets/filter_header_card.dart';
 import 'execution_detail_screen.dart';
 
 class ExecutionScreen extends StatefulWidget {
@@ -17,6 +18,20 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
   String _selectedSection = AppConfig.sections.first;
   int _rowLimit = 25;
   static const List<int> _rowLimitOptions = [5, 25, 50, 100];
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-set date to today and fetch data for all users
+    final user = AppConfig.loggedInUser;
+    if (user != null) {
+      _selectedDate = DateUtils.dateOnly(DateTime.now());
+      // Delay fetch to allow widget to build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchData();
+      });
+    }
+  }
 
   String _formatDate(DateTime date) {
     final year = date.year.toString();
@@ -94,56 +109,86 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
       ),
       body: Column(
         children: [
-          // Section dropdown
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-            child: Row(
-              children: [
-                const Text('Section: '),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: _selectedSection,
-                    isExpanded: true,
-                    items: AppConfig.sections
-                        .map(
-                          (s) => DropdownMenuItem<String>(
-                            value: s,
-                            child: Text(s, overflow: TextOverflow.ellipsis),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+            child: FilterHeaderCard(
+              title: 'Filter Eksekusi',
+              subtitle: 'Pilih section dan tanggal untuk melihat status POC.',
+              icon: Icons.filter_alt_rounded,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Section', style: FilterHeaderCard.labelStyle),
+                  const SizedBox(height: 8),
+                  FilterControlSurface(
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedSection,
+                        isExpanded: true,
+                        dropdownColor: FilterHeaderCard.menuColor,
+                        style: FilterHeaderCard.valueStyle,
+                        iconEnabledColor: FilterHeaderCard.foregroundColor,
+                        items: AppConfig.sections
+                            .map(
+                              (s) => DropdownMenuItem<String>(
+                                value: s,
+                                child: Text(
+                                  s,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FilterHeaderCard.valueStyle,
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() {
+                            _selectedSection = value;
+                          });
+                          _fetchData();
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text('Tanggal', style: FilterHeaderCard.labelStyle),
+                  const SizedBox(height: 8),
+                  FilterControlSurface(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today_outlined, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _selectedDate == null
+                                ? 'Belum dipilih'
+                                : _formatDate(_selectedDate!),
+                            style: FilterHeaderCard.valueStyle.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        )
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() {
-                        _selectedSection = value;
-                      });
-                      _fetchData();
-                    },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          // Date picker
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _selectedDate == null
-                        ? 'Tanggal: Belum dipilih'
-                        : 'Tanggal: ${_formatDate(_selectedDate!)}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: _pickDate,
-                  icon: const Icon(Icons.date_range),
-                  label: const Text('Pilih Tanggal'),
-                ),
-              ],
+                  if (AppConfig.loggedInUser?.role == 'administrator') ...[
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        onPressed: _pickDate,
+                        style: FilterHeaderCard.actionButtonStyle,
+                        icon: const Icon(Icons.date_range),
+                        label: const Text('Pilih Tanggal'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
           // Content
