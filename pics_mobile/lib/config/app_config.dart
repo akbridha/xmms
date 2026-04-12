@@ -17,14 +17,15 @@ class AppUser {
 
 class AppConfig {
   // For Docker/local API on REAL device, do not use localhost.
-  // Use your PC/Laptop LAN IP, e.g. http://192.168.1.10:9090/api
+  // Use your PC/Laptop LAN IP, e.g. http://192.168.1.115:9090/api
   // static const String host = 'http://192.168.1.10:9090/api';
 
   // For local API on emulator only.
-  static const String host = 'http://10.0.2.2:9090/api';
-
-  // For public API.
+  // static const String host = 'http://10.0.2.2:9090/api';
+  static const String host = 'http://192.168.8.115:9090/api';
   // static const String host = 'https://app-saptaindra.msappproxy.net/PlantAdmo/api';
+
+
 
   static const List<String> sections = [
     'PLANT PRIME MOVER',

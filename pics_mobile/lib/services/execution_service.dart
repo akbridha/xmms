@@ -28,7 +28,7 @@ class ExecutionService {
         final uri = Uri.parse(_url).replace(
           queryParameters: {
             'section': section,
-            'date': date,
+            'end_date': date,
             'page': page.toString(),
             if (search.isNotEmpty) 'search': search,
           },

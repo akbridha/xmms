@@ -66,38 +66,38 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<int>(
-                value: AppConfig.users.indexOf(AppConfig.currentUser),
-                icon: const Icon(Icons.arrow_drop_down),
-                items: List.generate(
-                  AppConfig.users.length,
-                  (i) {
-                    final user = AppConfig.users[i];
-                    return DropdownMenuItem<int>(
-                      value: i,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.person, size: 18),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${user.name} (${user.role})',
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() {
-                    AppConfig.currentUser = AppConfig.users[value];
-                  });
-                },
-              ),
-            ),
+            // child: DropdownButtonHideUnderline(
+            //   child: DropdownButton<int>(
+            //     value: AppConfig.users.indexOf(AppConfig.currentUser),
+            //     icon: const Icon(Icons.arrow_drop_down),
+            //     items: List.generate(
+            //       AppConfig.users.length,
+            //       (i) {
+            //         final user = AppConfig.users[i];
+            //         return DropdownMenuItem<int>(
+            //           value: i,
+            //           child: Row(
+            //             mainAxisSize: MainAxisSize.min,
+            //             children: [
+            //               const Icon(Icons.person, size: 18),
+            //               const SizedBox(width: 6),
+            //               Text(
+            //                 '${user.name} (${user.role})',
+            //                 style: const TextStyle(fontSize: 13),
+            //               ),
+            //             ],
+            //           ),
+            //         );
+            //       },
+            //     ),
+            //     onChanged: (value) {
+            //       if (value == null) return;
+            //       setState(() {
+            //         AppConfig.currentUser = AppConfig.users[value];
+            //       });
+            //     },
+            //   ),
+            // ),
           ),
         ],
       ),
