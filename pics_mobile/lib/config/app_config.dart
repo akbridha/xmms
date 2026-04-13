@@ -48,7 +48,7 @@ class AppConfig {
   };
 
   static const Map<String, String> partOfCheckAliases = {
-    'BAGIAN CABIN': 'CABIN',
+  
   };
 
   static String normalizePartOfCheck(String raw) {
