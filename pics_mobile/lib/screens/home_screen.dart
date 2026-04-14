@@ -112,20 +112,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final menuItems = [
-      _HomeMenuItem(
-        icon: Icons.calendar_month,
-        title: 'Jadwal',
-        description: 'Lihat jadwal inspeksi & maintenance',
-        color: Colors.blue,
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(
-              builder: (_) => const ScheduleScreen(),
-            ),
-          );
-        },
-      ),
+      // _HomeMenuItem(
+      //   icon: Icons.calendar_month,
+      //   title: 'Jadwal',
+      //   description: 'Lihat jadwal inspeksi & maintenance',
+      //   color: Colors.blue,
+      //   onTap: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute<void>(
+      //         builder: (_) => const ScheduleScreen(),
+      //       ),
+      //     );
+      //   },
+      // ),
       _HomeMenuItem(
         icon: Icons.build_circle,
         title: 'Eksekusi',
