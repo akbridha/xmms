@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../models/execution.dart';
@@ -18,10 +19,14 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
   String _selectedSection = AppConfig.sections.first;
   int _rowLimit = 25;
   static const List<int> _rowLimitOptions = [5, 25, 50, 100];
+  late TextEditingController _searchController;
+  String _searchQuery = '';
+  Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
+    _searchController = TextEditingController();
     // Auto-set date to today and fetch data for all users
     final user = AppConfig.loggedInUser;
     if (user != null) {
@@ -46,8 +51,27 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
       _futureExecutions = ExecutionService.fetchExecutions(
         section: _selectedSection,
         date: _formatDate(_selectedDate!),
+        search: _searchQuery,
       );
     });
+  }
+
+  void _onSearchChanged(String value) {
+    if (_searchQuery == value) return;
+    setState(() {
+      _searchQuery = value;
+    });
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      _fetchData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickDate() async {
@@ -112,15 +136,11 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: FilterHeaderCard(
-              title: 'Filter Eksekusi',
-              subtitle: 'Pilih section dan tanggal untuk melihat status POC.',
-              icon: Icons.filter_alt_rounded,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Section', style: FilterHeaderCard.labelStyle),
-                  const SizedBox(height: 8),
                   FilterControlSurface(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         value: _selectedSection,
@@ -150,14 +170,9 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  const Text('Tanggal', style: FilterHeaderCard.labelStyle),
                   const SizedBox(height: 8),
                   FilterControlSurface(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     child: Row(
                       children: [
                         const Icon(Icons.calendar_today_outlined, size: 18),
@@ -175,8 +190,43 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  FilterControlSurface(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            decoration: InputDecoration(
+                              hintText: 'Ketik kata kunci',
+                              border: InputBorder.none,
+                              isDense: true,
+                              suffixIcon:
+                                  _searchController.text.isNotEmpty
+                                      ? IconButton(
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            _onSearchChanged('');
+                                          },
+                                        )
+                                      : null,
+                            ),
+                            onChanged: _onSearchChanged,
+                            textInputAction: TextInputAction.search,
+                            onSubmitted: (_) => _fetchData(),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: _fetchData,
+                        ),
+                      ],
+                    ),
+                  ),
                   if (AppConfig.loggedInUser?.role == 'administrator') ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: OutlinedButton.icon(

@@ -30,7 +30,7 @@ class ExecutionService {
             'section': section,
             'end_date': date,
             'page': page.toString(),
-            if (search.isNotEmpty) 'search': search,
+            if (search.isNotEmpty) 'search_string': search,
           },
         );
 

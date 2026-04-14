@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class FilterHeaderCard extends StatelessWidget {
   const FilterHeaderCard({
     super.key,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
+    this.title,
+    this.subtitle,
+    this.icon,
     required this.child,
   });
 
@@ -38,9 +38,9 @@ class FilterHeaderCard extends StatelessWidget {
     ),
   );
 
-  final String title;
-  final String subtitle;
-  final IconData icon;
+  final String? title;
+  final String? subtitle;
+  final IconData? icon;
   final Widget child;
 
   @override
@@ -116,55 +116,67 @@ class FilterHeaderCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: const Color(0x1AFFFFFF),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0x26FFFFFF),
+                      if ((title != null && title!.isNotEmpty) ||
+                          (subtitle != null && subtitle!.isNotEmpty) ||
+                          icon != null) ...[
+                        Row(
+                          children: [
+                            if (icon != null) ...[
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: const Color(0x1AFFFFFF),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: const Color(0x26FFFFFF),
+                                  ),
+                                ),
+                                child: Icon(icon, size: 22),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (title != null && title!.isNotEmpty)
+                                    Text(
+                                      title!,
+                                      style:
+                                          textTheme.titleMedium?.copyWith(
+                                                color: foregroundColor,
+                                                fontWeight: FontWeight.w700,
+                                              ) ??
+                                          const TextStyle(
+                                            color: foregroundColor,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                  if (subtitle != null && subtitle!.isNotEmpty)
+                                    ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        subtitle!,
+                                        style:
+                                            textTheme.bodySmall?.copyWith(
+                                                  color: secondaryForegroundColor,
+                                                  height: 1.35,
+                                                ) ??
+                                            const TextStyle(
+                                              color: secondaryForegroundColor,
+                                              height: 1.35,
+                                            ),
+                                      ),
+                                    ],
+                                ],
                               ),
                             ),
-                            child: Icon(icon, size: 22),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: textTheme.titleMedium?.copyWith(
-                                        color: foregroundColor,
-                                        fontWeight: FontWeight.w700,
-                                      ) ??
-                                      const TextStyle(
-                                        color: foregroundColor,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  subtitle,
-                                  style: textTheme.bodySmall?.copyWith(
-                                        color: secondaryForegroundColor,
-                                        height: 1.35,
-                                      ) ??
-                                      const TextStyle(
-                                        color: secondaryForegroundColor,
-                                        height: 1.35,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                      ],
                       child,
                     ],
                   ),
