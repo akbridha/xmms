@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../config/app_config.dart';
 import '../models/validation_item.dart' as models;
 import '../models/validation_detail.dart';
@@ -16,7 +17,7 @@ class ValidationDetailScreen extends StatefulWidget {
 class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
   Future<ValidationDetail>? _futureDetail;
   bool _isProcessing = false;
-  String? _selectedPoc;
+  
 
   @override
   void initState() {
@@ -51,6 +52,55 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
       return '${dateTime.day} ${monthNames[dateTime.month - 1]} ${dateTime.year} $hour:$minute';
     } catch (e) {
       return dateTimeStr;
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    if (d.isNegative) d = d.abs();
+    final hours = d.inHours;
+    final minutes = d.inMinutes % 60;
+    final seconds = d.inSeconds % 60;
+    if (hours > 0) {
+      return '$hours jam $minutes menit';
+    } else if (minutes > 0) {
+      return '$minutes menit';
+    } else {
+      return '$seconds detik';
+    }
+  }
+
+  String _formatDurationFromStrings(String startStr, String endStr) {
+    try {
+      final start = DateTime.parse(startStr);
+      final end = DateTime.parse(endStr);
+      final diff = end.difference(start);
+      return _formatDuration(diff);
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String _formatNrpName(dynamic nrpName) {
+    if (nrpName == null) return '';
+    if (nrpName is String) {
+      try {
+        final decoded = json.decode(nrpName);
+        if (decoded is Map<String, dynamic>) {
+          final nrp = decoded['nrp'] ?? '';
+          final nama = decoded['nama'] ?? decoded['name'] ?? '';
+          return '$nrp / $nama';
+        } else {
+          return nrpName;
+        }
+      } catch (e) {
+        return nrpName;
+      }
+    } else if (nrpName is Map) {
+      final nrp = nrpName['nrp'] ?? '';
+      final nama = nrpName['nama'] ?? '';
+      return '$nrp / $nama';
+    } else {
+      return nrpName.toString();
     }
   }
 
@@ -229,54 +279,49 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
             const SizedBox(height: 16),
 
             // POC Selection (Informational)
-            if (detail.data.isNotEmpty) ...[
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'DAFTAR POC',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Pilih untuk melihat detail POC (opsional)',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                      const SizedBox(height: 12),
-                      ...detail.data.map((resultData) {
-                        return RadioListTile<String>(
-                          value: resultData.poc,
-                          groupValue: _selectedPoc,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedPoc = value;
-                            });
-                          },
-                          title: Text(
-                            resultData.poc,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: Text(
-                            'Status: ${resultData.status}\n'
-                            'Start: ${_formatDisplayDateTime(resultData.startTime)}\n'
-                            'End: ${_formatDisplayDateTime(resultData.endTime)}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            // if (detail.data.isNotEmpty) ...[
+              // Card(
+              //   child: Padding(
+              //     padding: const EdgeInsets.all(16),
+              //     child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         Text(
+              //           'DAFTAR POC',
+              //           style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              //                 fontWeight: FontWeight.bold,
+              //               ),
+              //         ),
+              //         const SizedBox(height: 4),
+              //         Text(
+              //           'Pilih untuk melihat detail POC (opsional)',
+              //           style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              //                 color: Colors.grey[600],
+              //               ),
+              //         ),
+              //         const SizedBox(height: 12),
+              //         ...detail.data.map((resultData) {
+              //           final durasi = _formatDurationFromStrings(resultData.startTime, resultData.endTime);
+              //           return Card(
+              //             margin: const EdgeInsets.symmetric(vertical: 6),
+              //             child: ListTile(
+              //               title: Text(
+              //                 resultData.poc,
+              //                 style: const TextStyle(fontWeight: FontWeight.w600),
+              //               ),
+              //               subtitle: Text(
+              //                 'Status: ${resultData.status}\nDurasi: $durasi',
+              //                 style: Theme.of(context).textTheme.bodySmall,
+              //               ),
+              //             ),
+              //           );
+              //         }),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+            //   const SizedBox(height: 16),
+            // ],
 
             // POC Details
             ...detail.data.map((resultData) {
@@ -324,7 +369,7 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          'Status: ${resultData.status} • Code: ${resultData.codeUnit}',
+          'Status: ${resultData.status} • Durasi: ${_formatDurationFromStrings(resultData.startTime, resultData.endTime)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         children: [
@@ -335,7 +380,7 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
               children: [
                 // Metadata
                 _buildInfoRow('Section', resultData.section),
-                _buildInfoRow('NRP/Name', resultData.nrpName),
+                _buildInfoRow('NRP/Name', _formatNrpName(resultData.nrpName)),
                 _buildInfoRow('Start Time', _formatDisplayDateTime(resultData.startTime)),
                 _buildInfoRow('End Time', _formatDisplayDateTime(resultData.endTime)),
                 if (resultData.hmKm != null)
