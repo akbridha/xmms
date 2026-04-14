@@ -6,13 +6,15 @@ import 'dart:convert';
 import '../config/app_config.dart';
 import '../models/execution.dart';
 import '../models/form_item.dart';
+import '../models/form_data_response.dart';
 import '../models/pending_submission.dart';
 import 'local_storage_service.dart';
 import 'sync_service.dart';
 
 class ExecutionService {
-  static String get _url => '${AppConfig.host}/execution/data';
-  static String get _formUrl => '${AppConfig.host}/execution/form';
+  static String get _url => '${AppConfig.host}/execution/data'; /*dipakai ketika bukan execution index*/
+  static String get _formUrl => '${AppConfig.host}/execution/form'; /*dipakai ketika ingin mengambil form untuk diisi sekaligus claim.*/
+  static String get _formDataUrl => '${AppConfig.host}/execution/form/data'; /*endpoint baru untuk mengambil form dengan history*/
   static String get _formSaveUrl => '${AppConfig.host}/execution/form/save';
   static const int _maxRetries = 3;
   static const Duration _timeout = Duration(seconds: 30);
@@ -104,13 +106,87 @@ class ExecutionService {
     throw Exception('Gagal memuat data setelah $_maxRetries percobaan');
   }
 
+  static Future<FormDataResponse> fetchFormData({
+    required String scheduleId,
+    required String poc,
+  }) async {
+    for (int attempt = 1; attempt <= _maxRetries; attempt++) {
+      try {
+        final uri = Uri.parse(_formDataUrl).replace(
+          queryParameters: {
+            'schedule_id': scheduleId,
+            'poc': poc,
+          },
+        );
+
+        debugPrint(
+          '[ExecutionService] Attempt $attempt/$_maxRetries - GET form data: $uri',
+        );
+
+        final response = await http.get(uri).timeout(_timeout);
+
+        if (response.statusCode == 200) {
+          debugPrint('[ExecutionService] Form data fetch success!');
+          final Map<String, dynamic> jsonMap =
+              json.decode(response.body) as Map<String, dynamic>;
+          return FormDataResponse.fromJson(jsonMap);
+        } else {
+          throw Exception(
+            'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+          );
+        }
+      } on TimeoutException {
+        debugPrint('[ExecutionService] Form data timeout on attempt $attempt');
+        if (attempt == _maxRetries) {
+          throw Exception(
+            'Timeout setelah $attempt percobaan. Server tidak merespons.',
+          );
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      } on SocketException catch (e) {
+        debugPrint('[ExecutionService] Form data SocketException: $e');
+        if (attempt == _maxRetries) {
+          throw Exception('Gagal terhubung ke server.\nError: ${e.message}');
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      } catch (e) {
+        debugPrint('[ExecutionService] Form data error on attempt $attempt: $e');
+        if (attempt == _maxRetries) {
+          throw Exception('Error: $e');
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      }
+    }
+    throw Exception('Gagal memuat form data setelah $_maxRetries percobaan');
+  }
+
   static Future<FormClaimResponse> fetchFormItems({
     required String section,
     required String partOfCheck,
     required String idSchedule,
   }) async {
-    for (int attempt = 1; attempt <= _maxRetries; attempt++) {
+    // STEP 1: Fetch form data with history from new endpoint
+    debugPrint('[ExecutionService] Fetching form data with history...');
+    final formDataResponse = await fetchFormData(
+      scheduleId: idSchedule,
+      poc: partOfCheck,
+    );
+
+    debugPrint(
+      '[ExecutionService] Form data fetched successfully. Total items: ${formDataResponse.data.items.length}',
+    );
+
+    // STEP 2: Check if this schedule has already been claimed
+    // by comparing schedule date with history dates
+    if (formDataResponse.data.isAlreadyClaimed) {
+      debugPrint(
+        '[ExecutionService] Schedule already claimed (found matching history date: ${formDataResponse.data.scheduleDate}). Skipping claim step.',
+      );
+    } else {
+      // STEP 3: Attempt to claim the form using old endpoint
+      // This step can fail silently - we still return the data with history
       try {
+        debugPrint('[ExecutionService] Attempting to claim form...');
         final uri = Uri.parse(_formUrl).replace(
           queryParameters: {
             'section': section,
@@ -119,45 +195,30 @@ class ExecutionService {
           },
         );
 
-        debugPrint(
-          '[ExecutionService] Attempt $attempt/$_maxRetries - GET form: $uri',
-        );
-
         final response = await http.get(uri).timeout(_timeout);
 
         if (response.statusCode == 200) {
-          debugPrint('[ExecutionService] Form fetch success!');
-          final Map<String, dynamic> jsonMap =
-              json.decode(response.body) as Map<String, dynamic>;
-          return FormClaimResponse.fromJson(jsonMap);
+          debugPrint('[ExecutionService] Form claimed successfully!');
         } else {
-          throw Exception(
-            'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+          debugPrint(
+            '[ExecutionService] Claim failed with status ${response.statusCode}, but continuing with fetched data',
           );
         }
-      } on TimeoutException {
-        debugPrint('[ExecutionService] Form timeout on attempt $attempt');
-        if (attempt == _maxRetries) {
-          throw Exception(
-            'Timeout setelah $attempt percobaan. Server tidak merespons.',
-          );
-        }
-        await Future<void>.delayed(Duration(seconds: attempt * 2));
-      } on SocketException catch (e) {
-        debugPrint('[ExecutionService] Form SocketException: $e');
-        if (attempt == _maxRetries) {
-          throw Exception('Gagal terhubung ke server.\nError: ${e.message}');
-        }
-        await Future<void>.delayed(Duration(seconds: attempt * 2));
       } catch (e) {
-        debugPrint('[ExecutionService] Form error on attempt $attempt: $e');
-        if (attempt == _maxRetries) {
-          throw Exception('Error: $e');
-        }
-        await Future<void>.delayed(Duration(seconds: attempt * 2));
+        debugPrint(
+          '[ExecutionService] Claim attempt failed: $e. Continuing with fetched data.',
+        );
+        // Continue anyway - we have the form data with history
       }
     }
-    throw Exception('Gagal memuat form setelah $_maxRetries percobaan');
+
+    // STEP 4: Return FormClaimResponse using data from first call
+    return FormClaimResponse(
+      message: formDataResponse.message,
+      partOfCheck: formDataResponse.data.poc,
+      idSchedule: formDataResponse.data.scheduleId.toString(),
+      items: formDataResponse.data.items,
+    );
   }
 
   static Future<String> saveForm({

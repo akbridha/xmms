@@ -240,60 +240,96 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
 
   Widget _buildFormItemCard(FormItem item) {
     final hasError = _showErrors && item.hasInput && !item.isFilled;
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      shape: hasError
-          ? RoundedRectangleBorder(
-              side: const BorderSide(color: Colors.red, width: 1.5),
-              borderRadius: BorderRadius.circular(12),
-            )
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final hasHistory = item.history.isNotEmpty;
+
+    // Build the main content (same for both expandable and non-expandable)
+    final contentColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.detailsItems,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ),
-                if (hasError)
-                  const Icon(Icons.error, color: Colors.red, size: 20),
-              ],
+            Expanded(
+              child: Text(
+                item.detailsItems,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
             ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${item.activity} • ${item.value}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                ),
-                if (item.durationMs > 0)
-                  Text(
-                    '${(item.durationMs / 1000).toStringAsFixed(1)}s',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (item.isCheck) _buildCheckInput(item),
-            if (item.isMeasure) _buildMeasureInput(item),
+            if (hasError)
+              const Icon(Icons.error, color: Colors.red, size: 20),
           ],
         ),
-      ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '${item.activity} • ${item.value}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+              ),
+            ),
+            if (item.durationMs > 0)
+              Text(
+                '${(item.durationMs / 1000).toStringAsFixed(1)}s',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (item.isCheck) _buildCheckInput(item),
+        if (item.isMeasure) _buildMeasureInput(item),
+      ],
     );
+
+    if (!hasHistory) {
+      // No history - return regular card
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        shape: hasError
+            ? RoundedRectangleBorder(
+                side: const BorderSide(color: Colors.red, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+              )
+            : null,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: contentColumn,
+        ),
+      );
+    } else {
+      // Has history - return expandable card
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        shape: hasError
+            ? RoundedRectangleBorder(
+                side: const BorderSide(color: Colors.red, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+              )
+            : null,
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor: Colors.transparent,
+          ),
+          child: ExpansionTile(
+            tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            childrenPadding: const EdgeInsets.only(
+              left: 12,
+              right: 12,
+              bottom: 12,
+            ),
+            title: contentColumn,
+            children: [
+              _buildHistorySection(item.history, item.isMeasure),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildCheckInput(FormItem item) {
@@ -338,5 +374,108 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         FocusScope.of(context).nextFocus();
       },
     );
+  }
+
+  Widget _buildHistorySection(List<dynamic> history, bool isMeasure) {
+    if (history.isEmpty) return const SizedBox.shrink();
+
+    // Sort history by date descending (most recent first)
+    final sortedHistory = List.from(history);
+    sortedHistory.sort((a, b) => b.date.compareTo(a.date));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        Text(
+          'Riwayat Inspeksi',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+        ),
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxHeight: 50,
+            minHeight: 0,
+          ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: sortedHistory.length,
+            padding: EdgeInsets.zero,
+            itemBuilder: (context, index) {
+              final entry = sortedHistory[index];
+              final dateStr = _formatHistoryDate(entry.date);
+              final resultStr = _formatHistoryResult(entry.result, isMeasure);
+
+              return Container(
+                margin: const EdgeInsets.only(right: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey[300]!, width: 0.5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      dateStr,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 9,
+                            color: Colors.grey[600],
+                            height: 1.0,
+                          ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      resultStr,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: _getResultColor(entry.result),
+                            height: 1.0,
+                          ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatHistoryDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${date.day} ${months[date.month - 1]}';
+  }
+
+  String _formatHistoryResult(String result, bool isMeasure) {
+    if (isMeasure) {
+      // For measure items, show the numeric value
+      return result;
+    } else {
+      // For check items, show icon based on value
+      final lowerResult = result.toLowerCase();
+      if (lowerResult == 'v') return '✓';
+      if (lowerResult == 'x') return '✗';
+      if (lowerResult == 'o') return '○';
+      return result; // Fallback to original value
+    }
+  }
+
+  Color _getResultColor(String result) {
+    final lowerResult = result.toLowerCase();
+    if (lowerResult == 'v') return Colors.green;
+    if (lowerResult == 'x') return Colors.red;
+    if (lowerResult == 'o') return Colors.orange;
+    return Colors.black87; // Default for numeric values
   }
 }

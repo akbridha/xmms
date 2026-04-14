@@ -1,3 +1,20 @@
+class HistoryEntry {
+  final DateTime date;
+  final String result;
+
+  HistoryEntry({
+    required this.date,
+    required this.result,
+  });
+
+  factory HistoryEntry.fromJson(Map<String, dynamic> json) {
+    return HistoryEntry(
+      date: DateTime.parse(json['date'] as String),
+      result: json['result'] as String? ?? '',
+    );
+  }
+}
+
 class FormItem {
   final int id;
   final String section;
@@ -9,6 +26,7 @@ class FormItem {
   final String? statusRisk;
   final int order;
   final int valid;
+  final List<HistoryEntry> history;
 
   String? inputValue;
   DateTime? _startTime;
@@ -39,9 +57,14 @@ class FormItem {
     required this.order,
     required this.valid,
     this.inputValue,
+    this.history = const [],
   });
 
   factory FormItem.fromJson(Map<String, dynamic> json) {
+    final historyList = (json['history'] as List<dynamic>? ?? [])
+        .map((e) => HistoryEntry.fromJson(e as Map<String, dynamic>))
+        .toList();
+
     return FormItem(
       id: json['id'] as int,
       section: json['section'] as String? ?? '',
@@ -53,6 +76,7 @@ class FormItem {
       statusRisk: json['status_risk'] as String?,
       order: json['order'] as int? ?? 0,
       valid: json['valid'] as int? ?? 1,
+      history: historyList,
     );
   }
 
