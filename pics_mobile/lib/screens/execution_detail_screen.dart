@@ -1,29 +1,68 @@
 import 'package:flutter/material.dart';
 import '../models/execution.dart';
+import '../services/execution_service.dart';
 import '../services/sync_service.dart';
 import 'execution_form_screen.dart';
 
 class ExecutionDetailScreen extends StatefulWidget {
-  final Execution execution;
+  final String eqNumb;
 
-  const ExecutionDetailScreen({super.key, required this.execution});
+  const ExecutionDetailScreen({super.key, required this.eqNumb});
 
   @override
   State<ExecutionDetailScreen> createState() => _ExecutionDetailScreenState();
 }
 
 class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
+  Execution? _execution;
+  bool _isLoading = true;
+  String? _errorMessage;
   int _unsyncedCount = 0;
   bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUnsyncedCount();
+    _loadExecutionDetail();
+  }
+
+  Future<void> _loadExecutionDetail() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final execution = await ExecutionService.fetchExecutionByEqNumb(
+        widget.eqNumb,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _execution = execution;
+      });
+
+      await _loadUnsyncedCount();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = '$e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadUnsyncedCount() async {
-    final count = await widget.execution.getUnsyncedCount();
+    final execution = _execution;
+    if (execution == null) return;
+
+    final count = await execution.getUnsyncedCount();
     if (mounted) {
       setState(() {
         _unsyncedCount = count;
@@ -34,13 +73,16 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
   Future<void> _handleSync() async {
     if (_isSyncing || _unsyncedCount == 0) return;
 
+    final execution = _execution;
+    if (execution == null) return;
+
     setState(() {
       _isSyncing = true;
     });
 
     try {
       final result =
-          await SyncService.syncBySchedule(widget.execution.scheduleId);
+          await SyncService.syncBySchedule(execution.scheduleId);
 
       if (!mounted) return;
 
@@ -74,9 +116,14 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
   }
 
   Widget _buildSyncButton() {
+    if (_execution == null) {
+      return const SizedBox.shrink();
+    }
+
     final hasUnsynced = _unsyncedCount > 0;
 
     return FloatingActionButton.extended(
+      heroTag: 'sync_fab',
       onPressed: _isSyncing ? null : _handleSync,
       icon: _isSyncing
           ? const SizedBox(
@@ -127,114 +174,172 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pocStatus = widget.execution.partOfCheckStatus.entries.toList();
+    final execution = _execution;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.execution.eqNumb),
+        title: Text(widget.eqNumb),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      floatingActionButton: _buildSyncButton(),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'DETAIL EKSEKUSI',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${widget.execution.eqNumb} • ${widget.execution.date}',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'SCHEDULE ID: ${widget.execution.scheduleId}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'PROGRESS POC: ${widget.execution.fulfilledPocCount}/${widget.execution.targetPocCount}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'TOTAL RESULT: ${widget.execution.resultRowCount}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'STATUS PART OF CHECK',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  if (pocStatus.isEmpty)
-                    Text(
-                      'Belum ada konfigurasi PART OF CHECK untuk section ini.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    )
-                  else
-                    ...pocStatus.map(
-                      (entry) => ListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        leading: Icon(
-                          entry.value
-                              ? Icons.check_circle
-                              : Icons.radio_button_unchecked,
-                          color: entry.value ? Colors.green : Colors.grey,
-                        ),
-                        title: Text(entry.key),
-                        subtitle: Text(entry.value ? 'SUDAH TERWAKILI' : 'BELUM'),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () async {
-                          final result = await Navigator.push<bool>(
-                            context,
-                            MaterialPageRoute<bool>(
-                              builder: (_) => ExecutionFormScreen(
-                                section: widget.execution.section,
-                                partOfCheck: entry.key,
-                                idSchedule: widget.execution.scheduleId,
-                              ),
-                            ),
-                          );
-
-                          // Reload unsynced count after returning from form
-                          if (result == true && mounted) {
-                            await _loadUnsyncedCount();
-                          }
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Klik Part of Check untuk membuka form inspeksi.',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey,
+      floatingActionButton: execution == null
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton(
+                  heroTag: 'refresh_fab',
+                  mini: true,
+                  onPressed: _isLoading ? null : _loadExecutionDetail,
+                  child: const Icon(Icons.refresh),
                 ),
+                const SizedBox(width: 12),
+                _buildSyncButton(),
+              ],
+            ),
+      body: _buildBody(execution),
+    );
+  }
+
+  Widget _buildBody(Execution? execution) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 12),
+              Text(
+                'Gagal memuat detail eksekusi',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _loadExecutionDetail,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Coba Lagi'),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      );
+    }
+
+    if (execution == null) {
+      return const Center(child: Text('Data eksekusi tidak ditemukan'));
+    }
+
+    final pocStatus = execution.partOfCheckStatus.entries.toList();
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DETAIL EKSEKUSI',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${execution.eqNumb} • ${execution.date}',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'SCHEDULE ID: ${execution.scheduleId}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'PROGRESS POC: ${execution.fulfilledPocCount}/${execution.targetPocCount}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'TOTAL RESULT: ${execution.resultRowCount}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'STATUS PART OF CHECK',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                if (pocStatus.isEmpty)
+                  Text(
+                    'Belum ada konfigurasi PART OF CHECK untuk section ini.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  )
+                else
+                  ...pocStatus.map(
+                    (entry) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        entry.value
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: entry.value ? Colors.green : Colors.grey,
+                      ),
+                      title: Text(entry.key),
+                      subtitle: Text(entry.value ? 'SUDAH TERWAKILI' : 'BELUM'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () async {
+                        final result = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute<bool>(
+                            builder: (_) => ExecutionFormScreen(
+                              section: execution.section,
+                              partOfCheck: entry.key,
+                              idSchedule: execution.scheduleId,
+                            ),
+                          ),
+                        );
+
+                        if (result == true && mounted) {
+                          await _loadUnsyncedCount();
+                        }
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Klik Part of Check untuk membuka form inspeksi.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey,
+              ),
+        ),
+      ],
     );
   }
 }

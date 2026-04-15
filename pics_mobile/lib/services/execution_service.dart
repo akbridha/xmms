@@ -106,6 +106,69 @@ class ExecutionService {
     throw Exception('Gagal memuat data setelah $_maxRetries percobaan');
   }
 
+  static Future<Execution> fetchExecutionByEqNumb(String eqNumb) async {
+    for (int attempt = 1; attempt <= _maxRetries; attempt++) {
+      try {
+        final uri = Uri.parse(_url).replace(
+          queryParameters: {
+            'search_string': eqNumb,
+          },
+        );
+
+        debugPrint(
+          '[ExecutionService] Attempt $attempt/$_maxRetries - GET detail: $uri',
+        );
+
+        final response = await http.get(uri).timeout(_timeout);
+
+        if (response.statusCode == 200) {
+          final List<dynamic> jsonList = json.decode(response.body);
+          final executions = jsonList
+              .map((j) => Execution.fromJson(j as Map<String, dynamic>))
+              .toList();
+
+          if (executions.isEmpty) {
+            throw Exception('Data eksekusi tidak ditemukan untuk $eqNumb');
+          }
+
+          final exactMatch = executions.where((e) => e.eqNumb == eqNumb);
+          if (exactMatch.isNotEmpty) {
+            return exactMatch.first;
+          }
+
+          // Fallback to first item if backend returns partial matches only.
+          return executions.first;
+        } else {
+          throw Exception(
+            'HTTP ${response.statusCode}: ${response.reasonPhrase}',
+          );
+        }
+      } on TimeoutException {
+        debugPrint('[ExecutionService] Detail timeout on attempt $attempt');
+        if (attempt == _maxRetries) {
+          throw Exception(
+            'Timeout setelah $attempt percobaan. Server tidak merespons dalam 30 detik.',
+          );
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      } on SocketException catch (e) {
+        debugPrint('[ExecutionService] Detail SocketException on attempt $attempt: $e');
+        if (attempt == _maxRetries) {
+          throw Exception('Gagal terhubung ke server. Error: ${e.message}');
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      } catch (e) {
+        debugPrint('[ExecutionService] Detail error on attempt $attempt: $e');
+        if (attempt == _maxRetries) {
+          throw Exception('Error: $e');
+        }
+        await Future<void>.delayed(Duration(seconds: attempt * 2));
+      }
+    }
+
+    throw Exception('Gagal memuat detail eksekusi setelah $_maxRetries percobaan');
+  }
+
   static Future<FormDataResponse> fetchFormData({
     required String scheduleId,
     required String poc,

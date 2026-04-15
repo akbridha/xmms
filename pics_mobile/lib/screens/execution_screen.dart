@@ -352,7 +352,7 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
                           context,
                           MaterialPageRoute<void>(
                             builder: (_) =>
-                                ExecutionDetailScreen(execution: execution),
+                                ExecutionDetailScreen(eqNumb: execution.eqNumb),
                           ),
                         );
                       },
