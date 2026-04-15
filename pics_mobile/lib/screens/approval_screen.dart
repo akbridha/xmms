@@ -37,7 +37,10 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
 
   void _fetchData() {
     setState(() {
-      _futureValidations = ValidationService.fetchValidationList();
+      _futureValidations = ValidationService.fetchValidationList(
+        section: _selectedSection,
+        date: _formatDate(_selectedDate),
+      );
     });
   }
 
@@ -55,6 +58,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
       setState(() {
         _selectedDate = DateUtils.dateOnly(pickedDate);
       });
+      _fetchData();
     }
   }
 
@@ -100,53 +104,60 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: FilterHeaderCard(
-              title: 'Filter Approval',
-              subtitle: 'Saring data approval berdasarkan section dan tanggal.',
-              icon: Icons.rule_folder_outlined,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Section', style: FilterHeaderCard.labelStyle),
-                  const SizedBox(height: 8),
                   FilterControlSurface(
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedSection,
-                        isExpanded: true,
-                        dropdownColor: FilterHeaderCard.menuColor,
-                        style: FilterHeaderCard.valueStyle,
-                        iconEnabledColor: FilterHeaderCard.foregroundColor,
-                        items: [
-                          const DropdownMenuItem<String>(
-                            value: 'All',
-                            child: Text(
-                              'All',
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.tune_rounded, size: 18),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: _selectedSection,
+                              isExpanded: true,
+                              dropdownColor: FilterHeaderCard.menuColor,
                               style: FilterHeaderCard.valueStyle,
+                              iconEnabledColor:
+                                  FilterHeaderCard.foregroundColor,
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: 'All',
+                                  child: Text(
+                                    'Semua section',
+                                    style: FilterHeaderCard.valueStyle,
+                                  ),
+                                ),
+                                ...AppConfig.sections.map(
+                                  (s) => DropdownMenuItem<String>(
+                                    value: s,
+                                    child: Text(
+                                      s,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: FilterHeaderCard.valueStyle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(() {
+                                  _selectedSection = value;
+                                });
+                                _fetchData();
+                              },
                             ),
                           ),
-                          ...AppConfig.sections.map(
-                            (s) => DropdownMenuItem<String>(
-                              value: s,
-                              child: Text(
-                                s,
-                                overflow: TextOverflow.ellipsis,
-                                style: FilterHeaderCard.valueStyle,
-                              ),
-                            ),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          if (value == null) return;
-                          setState(() {
-                            _selectedSection = value;
-                          });
-                        },
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  const Text('Tanggal', style: FilterHeaderCard.labelStyle),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   FilterControlSurface(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,

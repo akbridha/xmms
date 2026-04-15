@@ -9,15 +9,27 @@ import '../models/validation_detail.dart';
 
 class ValidationService {
   static String get _validationDataUrl => '${AppConfig.host}/validation/data';
-  static String get _validationDetailUrl => '${AppConfig.host}/validation/detail';
+  static String get _validationDetailUrl =>
+      '${AppConfig.host}/validation/detail';
   static const int _maxRetries = 3;
   static const Duration _timeout = Duration(seconds: 30);
 
   /// Fetch validation list from /api/validation/data
-  static Future<List<models.ValidationItem>> fetchValidationList() async {
+  static Future<List<models.ValidationItem>> fetchValidationList({
+    String? section,
+    String? date,
+  }) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        final uri = Uri.parse(_validationDataUrl);
+        final queryParameters = <String, String>{
+          if (section != null && section.isNotEmpty && section != 'All')
+            'section': section,
+          if (date != null && date.isNotEmpty) 'date': date,
+        };
+
+        final uri = Uri.parse(_validationDataUrl).replace(
+          queryParameters: queryParameters.isEmpty ? null : queryParameters,
+        );
 
         debugPrint(
           '[ValidationService] Attempt $attempt/$_maxRetries - GET: $uri',
@@ -31,7 +43,10 @@ class ValidationService {
           );
           final List<dynamic> jsonList = json.decode(response.body);
           return jsonList
-              .map((j) => models.ValidationItem.fromJson(j as Map<String, dynamic>))
+              .map(
+                (j) =>
+                    models.ValidationItem.fromJson(j as Map<String, dynamic>),
+              )
               .toList();
         } else {
           throw Exception(
@@ -57,17 +72,13 @@ class ValidationService {
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } on HttpException catch (e) {
-        debugPrint(
-          '[ValidationService] HttpException on attempt $attempt: $e',
-        );
+        debugPrint('[ValidationService] HttpException on attempt $attempt: $e');
         if (attempt == _maxRetries) {
           throw Exception('HTTP Error: ${e.message}');
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } catch (e) {
-        debugPrint(
-          '[ValidationService] Unknown error on attempt $attempt: $e',
-        );
+        debugPrint('[ValidationService] Unknown error on attempt $attempt: $e');
         if (attempt == _maxRetries) {
           throw Exception('Error: $e');
         }
@@ -79,14 +90,14 @@ class ValidationService {
   }
 
   /// Fetch validation detail from /api/validation/detail?schedule_id=X
-  static Future<ValidationDetail> fetchValidationDetail(String scheduleId) async {
+  static Future<ValidationDetail> fetchValidationDetail(
+    String scheduleId,
+  ) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        final uri = Uri.parse(_validationDetailUrl).replace(
-          queryParameters: {
-            'schedule_id': scheduleId,
-          },
-        );
+        final uri = Uri.parse(
+          _validationDetailUrl,
+        ).replace(queryParameters: {'schedule_id': scheduleId});
 
         debugPrint(
           '[ValidationService] Attempt $attempt/$_maxRetries - GET: $uri',
@@ -124,17 +135,13 @@ class ValidationService {
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } on HttpException catch (e) {
-        debugPrint(
-          '[ValidationService] HttpException on attempt $attempt: $e',
-        );
+        debugPrint('[ValidationService] HttpException on attempt $attempt: $e');
         if (attempt == _maxRetries) {
           throw Exception('HTTP Error: ${e.message}');
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));
       } catch (e) {
-        debugPrint(
-          '[ValidationService] Unknown error on attempt $attempt: $e',
-        );
+        debugPrint('[ValidationService] Unknown error on attempt $attempt: $e');
         if (attempt == _maxRetries) {
           throw Exception('Error: $e');
         }
@@ -152,16 +159,11 @@ class ValidationService {
     required String nrp,
   }) async {
     try {
-      final uri = Uri.parse('${AppConfig.host}/validation/validate').replace(
-        queryParameters: {
-          'schedule_id': scheduleId,
-          'nrp': nrp,
-        },
-      );
+      final uri = Uri.parse(
+        '${AppConfig.host}/validation/validate',
+      ).replace(queryParameters: {'schedule_id': scheduleId, 'nrp': nrp});
 
-      debugPrint(
-        '[ValidationService] Submitting approval - GET: $uri',
-      );
+      debugPrint('[ValidationService] Submitting approval - GET: $uri');
 
       final response = await http.get(uri).timeout(_timeout);
 
@@ -180,20 +182,14 @@ class ValidationService {
       }
     } on TimeoutException {
       debugPrint('[ValidationService] Timeout during approval submission');
-      throw Exception(
-        'Timeout. Server tidak merespons dalam 30 detik.',
-      );
+      throw Exception('Timeout. Server tidak merespons dalam 30 detik.');
     } on SocketException catch (e) {
-      debugPrint(
-        '[ValidationService] SocketException during approval: $e',
-      );
+      debugPrint('[ValidationService] SocketException during approval: $e');
       throw Exception(
         'Gagal terhubung ke server. Periksa koneksi internet Anda.',
       );
     } catch (e) {
-      debugPrint(
-        '[ValidationService] Error during approval: $e',
-      );
+      debugPrint('[ValidationService] Error during approval: $e');
       throw Exception('Error: $e');
     }
   }

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../config/app_config.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
 
@@ -95,12 +96,76 @@ class _LandingScreenState extends State<LandingScreen>
     }
   }
 
+  Future<void> _bypassLogin() async {
+    // Test data for bypass login
+    final testUserData = {
+      'nrp': '0115118',
+      'foto': 'foto_17689868260115118.jpg',
+      'telegram_id': null,
+      'nama': 'EKO BUDIANTO',
+      'jabatan': 'OFFICER PLANT SITE DEVELOPMENT',
+      'job_group': 'PLANT SITE DEVELOPMENT',
+      'job_rank': 'GROUP LEADER (SETARA)',
+      'section': 'PLANT PRIME MOVER',
+      'departement': 'PLANT HAULING',
+      'perusahaan': 'PT. SAPTAINDRA SEJATI',
+      'sub_section': 'PLANT PRIME MOVER',
+      'custodian_leader': '0109390',
+      'superior': '0108219',
+      'status_aktif_karyawan': 'AKTIF',
+      'tanggal_bergabung': null,
+      'tanggal_exp_minepermit': null,
+      'no_hp': '081270691176',
+      'email': 'eko.budianto03@gmail.com',
+      'status_approval_user': 'approved',
+      'status_karyawan': null,
+      'verification_code': null,
+      'email_verified_at': '2025-09-13 10:48:57',
+      'referensi': null,
+      'role': 'administrator',
+      'type_user': 'administrator',
+      'job_site': 'admo',
+      'unicode': null,
+      'tanggal_dibuat': null,
+      'tanggal_diubah': '2026-03-31 00:51:17',
+      'dbs': null,
+    };
+
+    if (!mounted) return;
+
+    try {
+      // Convert JSON to User object
+      final user = User.fromJson(testUserData);
+      
+      // Save logged-in user to global state
+      AppConfig.setLoggedInUser(user);
+
+      // Navigate to home screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => const HomeScreen(),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bypass login gagal: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _bypassLogin,
+        tooltip: 'Bypass Login (Dev)',
+        child: const Icon(Icons.vpn_key),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

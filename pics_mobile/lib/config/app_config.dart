@@ -22,7 +22,8 @@ class AppConfig {
 
   // For local API on emulator only.
   // static const String host = 'http://10.0.2.2:9090/api';
-  static const String host = 'http://10.168.232.226:9090/api';
+  // static const String host = 'http://10.168.232.226:9090/api';
+  static const String host = 'http://192.168.1.28:9090/api';
   // static const String host = 'https://app-saptaindra.msappproxy.net/PlantAdmo/api';
 
 
