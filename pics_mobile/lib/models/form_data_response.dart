@@ -69,16 +69,17 @@ class FormDataDetail {
   }
 
   // Helper method to check if this schedule has already been claimed
-  // by comparing schedule date with any history entry dates
+  // Checks if any item has a history entry (including null results) matching schedule_date
   bool get isAlreadyClaimed {
     try {
       final scheduleDateObj = DateTime.parse(scheduleDate);
       
       // Check if any item has a history entry matching the schedule date
+      // This includes entries with null/empty results (claimed but not filled)
       for (final item in items) {
         for (final historyEntry in item.history) {
           if (_isSameDate(historyEntry.date, scheduleDateObj)) {
-            return true;
+            return true; // Found claim record (even if not filled yet)
           }
         }
       }
@@ -86,6 +87,33 @@ class FormDataDetail {
     } catch (e) {
       // If date parsing fails, assume not claimed to be safe
       return false;
+    }
+  }
+
+  // Populate items with previously claimed data from history
+  // matching the schedule date (for edit mode)
+  // Only populates entries with non-empty results (skip null/empty values)
+  void populateWithClaimedData() {
+    try {
+      final scheduleDateObj = DateTime.parse(scheduleDate);
+
+      // For each item, find the history entry matching schedule date
+      // and set inputValue from that history (only if result is not empty)
+      for (final item in items) {
+        for (final historyEntry in item.history) {
+          if (_isSameDate(historyEntry.date, scheduleDateObj)) {
+            // Found matching history
+            // Only populate if result is not empty (skip null/empty values)
+            if (historyEntry.result.isNotEmpty) {
+              item.inputValue = historyEntry.result;
+            }
+            break; // Only use the first match for this date
+          }
+        }
+      }
+    } catch (e) {
+      // If date parsing fails, skip population (new entry mode)
+      return;
     }
   }
 

@@ -238,12 +238,29 @@ class ExecutionService {
     debugPrint(
       '[ExecutionService] Form data fetched successfully. Total items: ${formDataResponse.data.items.length}',
     );
+    
+    // Check for claim status by looking at history entries
+    final hasMatchingHistory = formDataResponse.data.isAlreadyClaimed;
+    debugPrint(
+      '[ExecutionService] Claim status: ${hasMatchingHistory ? "Already claimed (found history with date ${formDataResponse.data.scheduleDate})" : "Not claimed yet"}',
+    );
 
     // STEP 2: Check if this schedule has already been claimed
-    // by comparing schedule date with history dates
+    // by looking for history entries matching schedule_date (including null results)
     if (formDataResponse.data.isAlreadyClaimed) {
       debugPrint(
-        '[ExecutionService] Schedule already claimed (found matching history date: ${formDataResponse.data.scheduleDate}). Skipping claim step.',
+        '[ExecutionService] Schedule already claimed. Skipping claim step.',
+      );
+      
+      // STEP 2a: Populate form items with previously claimed data (Edit Mode)
+      debugPrint('[ExecutionService] Populating form with claimed data for editing...');
+      formDataResponse.data.populateWithClaimedData();
+      
+      final populatedCount = formDataResponse.data.items
+          .where((item) => item.inputValue != null && item.inputValue!.isNotEmpty)
+          .length;
+      debugPrint(
+        '[ExecutionService] Populated $populatedCount/${formDataResponse.data.items.length} items with existing data',
       );
     } else {
       // STEP 3: Attempt to claim the form using old endpoint

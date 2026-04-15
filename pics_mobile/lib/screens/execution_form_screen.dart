@@ -24,6 +24,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   List<FormItem> _items = [];
   bool _submitting = false;
   bool _showErrors = false;
+  bool _isEditMode = false; // Track if form is in edit mode
 
   static const List<String> _checkOptions = ['v', 'x', 'o'];
   static const Map<String, String> _checkLabels = {
@@ -45,6 +46,12 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
       idSchedule: widget.idSchedule,
     );
     _items = response.items;
+    
+    // Check if any item has pre-filled data (edit mode)
+    _isEditMode = _items.any((item) => 
+      item.inputValue != null && item.inputValue!.isNotEmpty
+    );
+    
     return response;
   }
 
@@ -165,10 +172,32 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Text(
-                  '${claim.message} • Schedule: ${claim.idSchedule}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                color: _isEditMode 
+                    ? Colors.orange[100]
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Row(
+                  children: [
+                    if (_isEditMode)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.edit,
+                          size: 16,
+                          color: Colors.orange[900],
+                        ),
+                      ),
+                    Expanded(
+                      child: Text(
+                        _isEditMode
+                            ? 'Mode Edit • ${claim.message} • Schedule: ${claim.idSchedule}'
+                            : '${claim.message} • Schedule: ${claim.idSchedule}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: _isEditMode ? Colors.orange[900] : null,
+                          fontWeight: _isEditMode ? FontWeight.w600 : null,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // Form items
@@ -191,7 +220,11 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
                               ),
                             )
                           : const Icon(Icons.save),
-                      label: Text(_submitting ? 'Menyimpan...' : 'Submit'),
+                      label: Text(
+                        _submitting 
+                            ? 'Menyimpan...' 
+                            : (_isEditMode ? 'Update' : 'Submit'),
+                      ),
                     ),
                   ),
                 ),
@@ -355,7 +388,8 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   }
 
   Widget _buildMeasureInput(FormItem item) {
-    return TextField(
+    return TextFormField(
+      initialValue: item.inputValue, // Pre-fill with existing value in edit mode
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: 'Masukkan nilai ${item.value}',
