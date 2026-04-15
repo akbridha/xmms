@@ -29,7 +29,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   static const Map<String, String> _checkLabels = {
     'v': '✓ Good',
     'x': '✗ Bad',
-    'o': '○ Good with note',
+    'o': '○ Good after Replace',
   };
 
   @override
