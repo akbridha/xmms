@@ -42,7 +42,7 @@ class AppConfig {
     'PLANT VESSEL': [
       'BAGIAN ATAS',
       'BAGIAN BAWAH',
-      'HUB DRUM TEMPERATURE',
+      'HUB DRUM TEMPERATUR',
       'GREASING SET TRAILER',
     ],
   };
