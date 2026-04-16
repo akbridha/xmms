@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/schedule.dart';
+import '../widgets/gradient_app_bar.dart';
 import '../services/schedule_service.dart';
 import '../widgets/filter_header_card.dart';
 
@@ -61,10 +62,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Jadwal'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: const GradientAppBar(title: 'Jadwal'),
       body: FutureBuilder<List<Schedule>>(
         future: _futureSchedules,
         builder: (context, snapshot) {

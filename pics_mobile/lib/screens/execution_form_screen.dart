@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
+import '../widgets/gradient_app_bar.dart';
 import '../models/form_item.dart';
 import '../services/execution_service.dart';
 
@@ -107,10 +108,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.partOfCheck),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: GradientAppBar(title: widget.partOfCheck),
       body: FutureBuilder<FormClaimResponse>(
         future: _futureForm,
         builder: (context, snapshot) {

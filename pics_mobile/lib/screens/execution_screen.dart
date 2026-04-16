@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../widgets/gradient_app_bar.dart';
 import '../config/app_config.dart';
 import '../models/execution.dart';
 import '../services/execution_service.dart';
@@ -127,9 +128,9 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Eksekusi'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: const GradientAppBar(
+        title: 'Eksekusi',
+        gradientColors: [kCalmTealEnd, kCalmTealMid, kCalmTealStart],
       ),
       body: Column(
         children: [

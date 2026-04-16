@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import '../widgets/gradient_app_bar.dart';
 import '../config/app_config.dart';
 import '../models/validation_item.dart' as models;
 import '../models/validation_detail.dart';
@@ -183,9 +184,9 @@ class _ValidationDetailScreenState extends State<ValidationDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Approval'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: const GradientAppBar(
+        title: 'Detail Approval',
+        gradientColors: [Color.fromARGB(255, 1, 108, 90), kCalmTealMid, kCalmTealStart],
       ),
       body: Column(
         children: [

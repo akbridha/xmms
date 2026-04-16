@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
+import '../widgets/app_drawer.dart';
+import '../widgets/gradient_app_bar.dart';
 import 'schedule_screen.dart';
 import 'execution_screen.dart';
 import 'approval_screen.dart';
@@ -159,47 +161,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PICS Mobile'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            // child: DropdownButtonHideUnderline(
-            //   child: DropdownButton<int>(
-            //     value: AppConfig.users.indexOf(AppConfig.currentUser),
-            //     icon: const Icon(Icons.arrow_drop_down),
-            //     items: List.generate(
-            //       AppConfig.users.length,
-            //       (i) {
-            //         final user = AppConfig.users[i];
-            //         return DropdownMenuItem<int>(
-            //           value: i,
-            //           child: Row(
-            //             mainAxisSize: MainAxisSize.min,
-            //             children: [
-            //               const Icon(Icons.person, size: 18),
-            //               const SizedBox(width: 6),
-            //               Text(
-            //                 '${user.name} (${user.role})',
-            //                 style: const TextStyle(fontSize: 13),
-            //               ),
-            //             ],
-            //           ),
-            //         );
-            //       },
-            //     ),
-            //     onChanged: (value) {
-            //       if (value == null) return;
-            //       setState(() {
-            //         AppConfig.currentUser = AppConfig.users[value];
-            //       });
-            //     },
-            //   ),
-            // ),
-          ),
-        ],
-      ),
+      appBar: const GradientAppBar(title: 'PICS Mobile'),
+      drawer: const AppDrawer(currentRoute: 'home'),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

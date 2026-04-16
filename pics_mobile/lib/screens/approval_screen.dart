@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
+import '../widgets/gradient_app_bar.dart';
 import '../models/validation_item.dart';
 import '../services/validation_service.dart';
 import '../widgets/filter_header_card.dart';
@@ -80,9 +81,9 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Approval'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      appBar: GradientAppBar(
+        title: 'Approval',
+        gradientColors: const [Color.fromARGB(255, 1, 108, 90), kCalmTealMid, kCalmTealStart],
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

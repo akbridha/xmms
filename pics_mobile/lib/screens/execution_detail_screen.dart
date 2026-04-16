@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/execution.dart';
+import '../widgets/gradient_app_bar.dart';
 import '../services/execution_service.dart';
 import '../services/sync_service.dart';
 import 'execution_form_screen.dart';
@@ -177,10 +178,7 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
     final execution = _execution;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.eqNumb),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: GradientAppBar(title: widget.eqNumb),
       floatingActionButton: execution == null
           ? null
           : Row(
