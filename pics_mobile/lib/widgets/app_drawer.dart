@@ -45,8 +45,26 @@ class AppDrawer extends StatelessWidget {
 
           // ── Navigation items ───────────────────────────────────
           _NavItem(
-            icon: Icons.home_rounded,
-            label: 'Home',
+            icon: Icons.fact_check_outlined,
+            label: 'Checksheet PI',
+            isActive: currentRoute == 'home',
+            onTap: () => Navigator.pop(context),
+          ),
+          _NavItem(
+            icon: Icons.checklist_rtl_rounded,
+            label: 'MSC',
+            isActive: currentRoute == 'home',
+            onTap: () => Navigator.pop(context),
+          ),
+          _NavItem(
+            icon: Icons.gpp_good_outlined,
+            label: 'JSA',
+            isActive: currentRoute == 'home',
+            onTap: () => Navigator.pop(context),
+          ),
+          _NavItem(
+            icon: Icons.description_outlined,
+            label: 'HIRA',
             isActive: currentRoute == 'home',
             onTap: () => Navigator.pop(context),
           ),
