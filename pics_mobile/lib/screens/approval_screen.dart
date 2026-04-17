@@ -15,7 +15,7 @@ class ApprovalScreen extends StatefulWidget {
 
 class _ApprovalScreenState extends State<ApprovalScreen> {
   Future<List<ValidationItem>>? _futureValidations;
-  DateTime _selectedDate = DateTime.now();
+  DateTime? _selectedDate;
   String _selectedSection = 'All';
 
   @override
@@ -40,7 +40,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     setState(() {
       _futureValidations = ValidationService.fetchValidationList(
         section: _selectedSection,
-        date: _formatDate(_selectedDate),
+        date: _selectedDate != null ? _formatDate(_selectedDate!) : null,
       );
     });
   }
@@ -63,6 +63,13 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     }
   }
 
+  void _clearDate() {
+    setState(() {
+      _selectedDate = null;
+    });
+    _fetchData();
+  }
+
   List<ValidationItem> _applyFilters(List<ValidationItem> items) {
     var filtered = items;
 
@@ -72,8 +79,10 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     }
 
     // Filter by date
-    final selectedDateStr = _formatDate(_selectedDate);
-    filtered = filtered.where((item) => item.date == selectedDateStr).toList();
+    if (_selectedDate != null) {
+      final selectedDateStr = _formatDate(_selectedDate!);
+      filtered = filtered.where((item) => item.date == selectedDateStr).toList();
+    }
 
     return filtered;
   }
@@ -170,12 +179,19 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            _formatDisplayDate(_selectedDate),
+                            _selectedDate != null
+                                ? _formatDisplayDate(_selectedDate!)
+                                : 'Semua tanggal',
                             style: FilterHeaderCard.valueStyle.copyWith(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
+                        if (_selectedDate != null)
+                          GestureDetector(
+                            onTap: _clearDate,
+                            child: const Icon(Icons.close, size: 16),
+                          ),
                       ],
                     ),
                   ),
