@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../config/app_config.dart';
 import '../widgets/gradient_app_bar.dart';
+import '../widgets/top_right_notification.dart';
 import '../models/form_item.dart';
 import '../services/execution_service.dart';
 
@@ -25,7 +26,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   List<FormItem> _items = [];
   bool _submitting = false;
   bool _showErrors = false;
-  bool _isEditMode = false; // Track if form is in edit mode
+  bool _isEditMode = false;
 
   static const List<String> _checkOptions = ['v', 'x', 'o'];
   static const Map<String, String> _checkLabels = {
@@ -47,12 +48,10 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
       idSchedule: widget.idSchedule,
     );
     _items = response.items;
-    
-    // Check if any item has pre-filled data (edit mode)
-    _isEditMode = _items.any((item) => 
-      item.inputValue != null && item.inputValue!.isNotEmpty
-    );
-    
+
+    _isEditMode = _items.any((item) =>
+        item.inputValue != null && item.inputValue!.isNotEmpty);
+
     return response;
   }
 
@@ -62,8 +61,9 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     });
   }
 
-  bool get _allFilled => _items.where((item) => item.hasInput).every(
-      (item) => item.inputValue != null && item.inputValue!.isNotEmpty);
+  bool get _allFilled => _items
+      .where((item) => item.hasInput)
+      .every((item) => item.inputValue != null && item.inputValue!.isNotEmpty);
 
   Future<void> _submit() async {
     // Stop all running timers
@@ -107,135 +107,159 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: GradientAppBar(title: widget.partOfCheck),
-      body: FutureBuilder<FormClaimResponse>(
-        future: _futureForm,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: GradientAppBar(title: widget.partOfCheck),
+          body: FutureBuilder<FormClaimResponse>(
+            future: _futureForm,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Gagal memuat form',
-                      style: Theme.of(context).textTheme.titleMedium,
+              if (snapshot.hasError) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Gagal memuat form',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${snapshot.error}',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: _retry,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Coba Lagi'),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _retry,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Coba Lagi'),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+                  ),
+                );
+              }
 
-          final claim = snapshot.data!;
+              final claim = snapshot.data!;
 
-          if (_items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              if (_items.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.inbox, size: 48, color: Colors.grey),
+                      const SizedBox(height: 16),
+                      Text(claim.message),
+                      const SizedBox(height: 8),
+                      const Text('Tidak ada item inspeksi'),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
                 children: [
-                  const Icon(Icons.inbox, size: 48, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  Text(claim.message),
-                  const SizedBox(height: 8),
-                  const Text('Tidak ada item inspeksi'),
-                ],
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              // Header info
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                color: _isEditMode 
-                    ? Colors.orange[100]
-                    : Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Row(
-                  children: [
-                    if (_isEditMode)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Icon(
-                          Icons.edit,
-                          size: 16,
-                          color: Colors.orange[900],
-                        ),
-                      ),
-                    Expanded(
-                      child: Text(
-                        _isEditMode
-                            ? 'Mode Edit • ${claim.message} • Schedule: ${claim.idSchedule}'
-                            : '${claim.message} • Schedule: ${claim.idSchedule}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: _isEditMode ? Colors.orange[900] : null,
-                          fontWeight: _isEditMode ? FontWeight.w600 : null,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Form items
-              Expanded(child: _buildItemList()),
-              // Submit button
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: SizedBox(
+                  Container(
                     width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: _submitting ? null : _submit,
-                      icon: _submitting
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.save),
-                      label: Text(
-                        _submitting 
-                            ? 'Menyimpan...' 
-                            : (_isEditMode ? 'Update' : 'Submit'),
+                    padding: const EdgeInsets.all(12),
+                    color: _isEditMode
+                        ? Colors.orange[100]
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Row(
+                      children: [
+                        if (_isEditMode)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Icon(
+                              Icons.edit,
+                              size: 16,
+                              color: Colors.orange[900],
+                            ),
+                          ),
+                        Expanded(
+                          child: Text(
+                            _isEditMode
+                                ? 'Mode Edit • ${claim.message} • Schedule: ${claim.idSchedule}'
+                                : '${claim.message} • Schedule: ${claim.idSchedule}',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: _isEditMode ? Colors.orange[900] : null,
+                                      fontWeight: _isEditMode ? FontWeight.w600 : null,
+                                    ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(child: _buildItemList()),
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _submitting ? null : _submit,
+                          icon: _submitting
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.save),
+                          label: Text(
+                            _submitting ? 'Menyimpan...' : (_isEditMode ? 'Update' : 'Submit'),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
+              );
+            },
+          ),
+        ),
+
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          right: 12,
+          child: SafeArea(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                elevation: 6,
               ),
-            ],
-          );
-        },
-      ),
+              icon: const Icon(Icons.notifications, size: 18, color: Colors.white),
+              label: const Text('Notify', style: TextStyle(color: Colors.white)),
+              onPressed: () {
+                TopRightNotification.show(
+                  context,
+                  title: _isEditMode ? 'Mode Edit' : 'Notifikasi',
+                  subtitle: 'Contoh notifikasi slide-in',
+                  duration: const Duration(seconds: 4),
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildItemList() {
-    // Group items by 'item' field
     final grouped = <String, List<int>>{};
     for (int i = 0; i < _items.length; i++) {
       grouped.putIfAbsent(_items[i].item, () => []).add(i);
@@ -251,7 +275,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Group header
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text(
@@ -273,7 +296,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     final hasError = _showErrors && item.hasInput && !item.isFilled;
     final hasHistory = item.history.isNotEmpty;
 
-    // Build the main content (same for both expandable and non-expandable)
     final contentColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -287,8 +309,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
                     ),
               ),
             ),
-            if (hasError)
-              const Icon(Icons.error, color: Colors.red, size: 20),
+            if (hasError) const Icon(Icons.error, color: Colors.red, size: 20),
           ],
         ),
         const SizedBox(height: 4),
@@ -318,7 +339,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     );
 
     if (!hasHistory) {
-      // No history - return regular card
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         shape: hasError
@@ -333,7 +353,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         ),
       );
     } else {
-      // Has history - return expandable card
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         shape: hasError
@@ -348,11 +367,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
           ),
           child: ExpansionTile(
             tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            childrenPadding: const EdgeInsets.only(
-              left: 12,
-              right: 12,
-              bottom: 12,
-            ),
+            childrenPadding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
             title: contentColumn,
             children: [
               _buildHistorySection(item.history, item.isMeasure),
@@ -387,7 +402,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
 
   Widget _buildMeasureInput(FormItem item) {
     return TextFormField(
-      initialValue: item.inputValue, // Pre-fill with existing value in edit mode
+      initialValue: item.inputValue,
       keyboardType: TextInputType.number,
       decoration: InputDecoration(
         hintText: 'Masukkan nilai ${item.value}',
@@ -411,7 +426,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   Widget _buildHistorySection(List<dynamic> history, bool isMeasure) {
     if (history.isEmpty) return const SizedBox.shrink();
 
-    // Sort history by date descending (most recent first)
     final sortedHistory = List.from(history);
     sortedHistory.sort((a, b) => b.date.compareTo(a.date));
 
@@ -428,10 +442,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         ),
         const SizedBox(height: 8),
         ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxHeight: 50,
-            minHeight: 0,
-          ),
+          constraints: const BoxConstraints(maxHeight: 50, minHeight: 0),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: sortedHistory.length,
@@ -490,17 +501,12 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   }
 
   String _formatHistoryResult(String result, bool isMeasure) {
-    if (isMeasure) {
-      // For measure items, show the numeric value
-      return result;
-    } else {
-      // For check items, show icon based on value
-      final lowerResult = result.toLowerCase();
-      if (lowerResult == 'v') return '✓';
-      if (lowerResult == 'x') return '✗';
-      if (lowerResult == 'o') return '○';
-      return result; // Fallback to original value
-    }
+    if (isMeasure) return result;
+    final lowerResult = result.toLowerCase();
+    if (lowerResult == 'v') return '✓';
+    if (lowerResult == 'x') return '✗';
+    if (lowerResult == 'o') return '○';
+    return result;
   }
 
   Color _getResultColor(String result) {
@@ -508,6 +514,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     if (lowerResult == 'v') return Colors.green;
     if (lowerResult == 'x') return Colors.red;
     if (lowerResult == 'o') return Colors.orange;
-    return Colors.black87; // Default for numeric values
+    return Colors.black87;
   }
 }
