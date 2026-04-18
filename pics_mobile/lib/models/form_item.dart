@@ -90,7 +90,7 @@ class FormItem {
     return {
       'id': id,
       'input_value': inputValue ?? '',
-      'duration_ms': durationMs,
+      'duration': durationMs,
     };
   }
 }

@@ -63,11 +63,11 @@ class PendingSubmission {
   /// Convert JSON string back to items list
   static List<FormItem> _itemsFromJson(String jsonStr) {
     final List<dynamic> jsonList = json.decode(jsonStr) as List<dynamic>;
-    // Note: We're only storing id and input_value for submission
+    // Note: We're storing id, input_value, and duration for submission
     // So we create minimal FormItem objects just for submission purposes
     return jsonList.map((item) {
       final map = item as Map<String, dynamic>;
-      return FormItem(
+      final formItem = FormItem(
         id: map['id'] as int,
         section: '',
         partOfCheck: '',
@@ -79,6 +79,9 @@ class PendingSubmission {
         valid: 1,
         inputValue: map['input_value'] as String?,
       );
+      // Restore duration value from JSON
+      formItem.durationMs = map['duration'] as int? ?? 0;
+      return formItem;
     }).toList();
   }
 

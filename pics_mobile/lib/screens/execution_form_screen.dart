@@ -28,6 +28,10 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
   bool _showErrors = false;
   bool _isEditMode = false;
 
+  // Global timer tracking
+  DateTime? _pageOpenTime;
+  DateTime? _lastInteractionTime;
+
   static const List<String> _checkOptions = ['v', 'x', 'o'];
   static const Map<String, String> _checkLabels = {
     'v': '✓ Good',
@@ -52,7 +56,31 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     _isEditMode = _items.any((item) =>
         item.inputValue != null && item.inputValue!.isNotEmpty);
 
+    // Start global timer after form is loaded
+    _pageOpenTime = DateTime.now();
+    _lastInteractionTime = null;
+
     return response;
+  }
+
+  /// Record interaction duration - from last interaction (or page open) to now
+  void _recordInteraction(FormItem item) {
+    final now = DateTime.now();
+    final startTime = _lastInteractionTime ?? _pageOpenTime ?? now;
+    
+    // Calculate duration from last interaction to now
+    final duration = now.difference(startTime).inMilliseconds;
+    
+    // Save duration to item
+    item.durationMs = duration;
+    
+    // Update last interaction time
+    _lastInteractionTime = now;
+    
+    debugPrint(
+      '[Timer] Item ${item.id} (${item.detailsItems}): ${duration}ms '
+      '(from ${startTime.toIso8601String()} to ${now.toIso8601String()})',
+    );
   }
 
   void _retry() {
@@ -66,11 +94,6 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
       .every((item) => item.inputValue != null && item.inputValue!.isNotEmpty);
 
   Future<void> _submit() async {
-    // Stop all running timers
-    for (final item in _items) {
-      item.stopTimer();
-    }
-
     if (!_allFilled) {
       setState(() => _showErrors = true);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -389,9 +412,11 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
             selected: selected,
             onSelected: (_) {
               setState(() {
-                item.startTimer();
+                // Record duration from last interaction to now
+                _recordInteraction(item);
+                
+                // Set value
                 item.inputValue = option;
-                item.stopTimer();
               });
             },
           ),
@@ -411,13 +436,13 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
         errorText: (_showErrors && !item.isFilled) ? 'Wajib diisi' : null,
       ),
       onTap: () {
-        item.startTimer();
+        // Record duration when field is tapped
+        _recordInteraction(item);
       },
       onChanged: (val) {
         item.inputValue = val;
       },
       onEditingComplete: () {
-        item.stopTimer();
         FocusScope.of(context).nextFocus();
       },
     );
@@ -461,6 +486,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
                   border: Border.all(color: Colors.grey[300]!, width: 0.5),
                 ),
                 child: Column(
+                  // Untuk menampilkan history
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
