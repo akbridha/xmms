@@ -6,6 +6,7 @@ import '../config/app_config.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
 import 'home_screen.dart';
+import '../services/version_service.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -30,6 +31,9 @@ class _LandingScreenState extends State<LandingScreen>
     )..repeat();
     _nrpController = TextEditingController();
     _passwordController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      VersionService.checkAndPrompt(context);
+    });
   }
 
   @override
