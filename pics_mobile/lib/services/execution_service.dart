@@ -88,7 +88,6 @@ class ExecutionService {
             'Tips:\n'
             '• Pastikan URL benar\n'
             '• Periksa koneksi internet device\n'
-            '• Jika di corporate network, setup proxy di device settings',
           );
         }
         await Future<void>.delayed(Duration(seconds: attempt * 2));

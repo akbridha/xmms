@@ -1,7 +1,6 @@
 // lib/services/version_service.dart
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -9,39 +8,43 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 
 class VersionCheckResult {
-  final String latestVersion;
-  final String minVersion;
-  final bool forceUpdate;
-  final String updateUrl;
-  final String? message;
+  final bool updateAvailable;
+  final bool isMandatory;
   final String currentVersion;
+  final String? latestVersion;
+  final String? downloadUrl;
+  final String? fileSizeFormatted;
+  final String? releaseNotes;
+  final String? releaseDate;
 
-  VersionCheckResult({
-    required this.latestVersion,
-    required this.minVersion,
-    required this.forceUpdate,
-    required this.updateUrl,
-    this.message,
+  const VersionCheckResult({
+    required this.updateAvailable,
+    required this.isMandatory,
     required this.currentVersion,
+    this.latestVersion,
+    this.downloadUrl,
+    this.fileSizeFormatted,
+    this.releaseNotes,
+    this.releaseDate,
   });
 
-  bool get needsUpdate => _compareVersion(currentVersion, latestVersion) < 0;
-
-  factory VersionCheckResult.fromJson(Map<String, dynamic> json, String currentVersion) {
+  factory VersionCheckResult.fromJson(Map<String, dynamic> body, String currentVersion) {
+    final data = body['data'] as Map<String, dynamic>? ?? {};
     return VersionCheckResult(
-      latestVersion: (json['latest_version'] ?? json['latest'] ?? '0.0.0') as String,
-      minVersion: (json['min_version'] ?? json['minVersion'] ?? '0.0.0') as String,
-      forceUpdate: (json['force_update'] == true || json['force'] == true),
-      updateUrl: (json['update_url'] ?? json['download_url'] ?? '') as String,
-      message: json['message'] as String?,
-      currentVersion: currentVersion,
+      updateAvailable: data['update_available'] as bool? ?? false,
+      isMandatory: data['is_mandatory'] as bool? ?? false,
+      currentVersion: (data['current_version'] as String?) ?? currentVersion,
+      latestVersion: data['latest_version'] as String?,
+      downloadUrl: data['download_url'] as String?,
+      fileSizeFormatted: data['file_size_formatted'] as String?,
+      releaseNotes: data['release_notes'] as String?,
+      releaseDate: data['release_date'] as String?,
     );
   }
 }
 
 class VersionService {
-  // sesuaikan endpoint di server Anda
-  static String get _checkUrl => '${AppConfig.host}/app/version';
+  static String get _checkUrl => '${AppConfig.host}/version/check';
 
   static const Duration _timeout = Duration(seconds: 10);
   static const int _maxRetries = 3;
@@ -49,14 +52,11 @@ class VersionService {
   static Future<VersionCheckResult> checkVersion() async {
     final info = await PackageInfo.fromPlatform();
     final currentVersion = info.version;
-    final currentBuild = info.buildNumber;
 
     for (var attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
         final uri = Uri.parse(_checkUrl).replace(queryParameters: {
-          'platform': _detectPlatform(),
-          'version': currentVersion,
-          'build': currentBuild,
+          'current_version': currentVersion,
         });
 
         final resp = await http.get(uri).timeout(_timeout);
@@ -81,8 +81,11 @@ class VersionService {
   static Future<void> checkAndPrompt(BuildContext context) async {
     try {
       final result = await checkVersion();
-      if (result.needsUpdate) {
+      if (!context.mounted) return;
+      if (result.updateAvailable) {
         await _showUpdateDialog(context, result);
+      } else {
+        await _showUpToDateDialog(context, result);
       }
     } catch (e) {
       debugPrint('Version check failed: $e');
@@ -90,26 +93,36 @@ class VersionService {
   }
 
   static Future<void> _showUpdateDialog(BuildContext context, VersionCheckResult r) async {
-    final force = r.forceUpdate;
+    final mandatory = r.isMandatory;
+    final contentParts = <String>[
+      'Versi saat ini: ${r.currentVersion}',
+      if (r.latestVersion != null) 'Versi terbaru: ${r.latestVersion}',
+      if (r.fileSizeFormatted != null) 'Ukuran: ${r.fileSizeFormatted}',
+      if (r.releaseDate != null) 'Tanggal rilis: ${r.releaseDate}',
+      if (r.releaseNotes != null && r.releaseNotes!.isNotEmpty) '\n${r.releaseNotes}',
+    ];
+
     await showDialog<void>(
       context: context,
-      barrierDismissible: !force,
-      builder: (ctx) => WillPopScope(
-        onWillPop: () async => !force,
+      barrierDismissible: !mandatory,
+      builder: (ctx) => PopScope(
+        canPop: !mandatory,
         child: AlertDialog(
-          title: Text(force ? 'Update Wajib' : 'Update Tersedia'),
-          content: Text(r.message ?? 'Versi saat ini: ${r.currentVersion}\nVersi terbaru: ${r.latestVersion}'),
+          title: Text(mandatory ? 'Update Wajib' : 'Update Tersedia'),
+          content: Text(contentParts.join('\n')),
           actions: [
-            if (!force)
-              TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Nanti')),
+            if (!mandatory)
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('Nanti'),
+              ),
             TextButton(
               onPressed: () async {
-                final url = r.updateUrl;
-                if (url.isNotEmpty) {
-                  final uri = Uri.parse(url);
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                final url = r.downloadUrl;
+                if (url != null && url.isNotEmpty) {
+                  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
                 }
-                if (!force) Navigator.of(ctx).pop();
+                if (!mandatory && ctx.mounted) Navigator.of(ctx).pop();
               },
               child: const Text('Update'),
             ),
@@ -119,33 +132,19 @@ class VersionService {
     );
   }
 
-  static String _detectPlatform() {
-    if (kIsWeb) return 'web';
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'android';
-      case TargetPlatform.iOS:
-        return 'ios';
-      default:
-        return defaultTargetPlatform.toString();
-    }
+  static Future<void> _showUpToDateDialog(BuildContext context, VersionCheckResult r) async {
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Versi Terbaru'),
+        content: Text('Aplikasi sudah versi terbaru (${r.currentVersion}).'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
-}
-
-int _compareVersion(String a, String b) {
-  List<int> norm(String v) {
-    final s = v.split('+').first.split('-').first;
-    return s.split('.').map((p) => int.tryParse(p) ?? 0).toList();
-  }
-
-  final A = norm(a);
-  final B = norm(b);
-  final n = A.length > B.length ? A.length : B.length;
-  for (var i = 0; i < n; i++) {
-    final ai = i < A.length ? A[i] : 0;
-    final bi = i < B.length ? B[i] : 0;
-    if (ai < bi) return -1;
-    if (ai > bi) return 1;
-  }
-  return 0;
 }

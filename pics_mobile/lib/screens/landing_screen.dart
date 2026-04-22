@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../config/app_config.dart';
 import '../models/user.dart';
 import '../services/auth_service.dart';
@@ -21,6 +23,7 @@ class _LandingScreenState extends State<LandingScreen>
   late final TextEditingController _nrpController;
   late final TextEditingController _passwordController;
   bool _isLoading = false;
+  String _version = '';
 
   @override
   void initState() {
@@ -31,6 +34,9 @@ class _LandingScreenState extends State<LandingScreen>
     )..repeat();
     _nrpController = TextEditingController();
     _passwordController = TextEditingController();
+    PackageInfo.fromPlatform().then((info) {
+      if (mounted) setState(() => _version = info.version);
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       VersionService.checkAndPrompt(context);
     });
@@ -255,6 +261,16 @@ class _LandingScreenState extends State<LandingScreen>
                               ),
                             )
                           : const Text('Login'),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    _version.isEmpty ? '' : 'v$_version',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],

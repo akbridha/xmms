@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'screens/landing_screen.dart';
 
 void main() {
@@ -29,6 +30,7 @@ class AppStartupScreen extends StatefulWidget {
 
 class _AppStartupScreenState extends State<AppStartupScreen> {
   late final Future<void> _initialization;
+  String _version = '';
 
   @override
   void initState() {
@@ -37,6 +39,8 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
   }
 
   Future<void> _initializeApp() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) setState(() => _version = info.version);
     await Future<void>.delayed(const Duration(seconds: 2));
   }
 
@@ -63,6 +67,15 @@ class _AppStartupScreenState extends State<AppStartupScreen> {
                 ),
                 const SizedBox(height: 24),
                 const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  _version.isEmpty ? '' : 'v$_version',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
             ),
           ),
