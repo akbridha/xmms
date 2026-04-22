@@ -4,8 +4,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
+import '../screens/update_download_screen.dart';
 
 class VersionCheckResult {
   final bool updateAvailable;
@@ -83,7 +83,17 @@ class VersionService {
       final result = await checkVersion();
       if (!context.mounted) return;
       if (result.updateAvailable) {
-        await _showUpdateDialog(context, result);
+        final confirmed = await _showUpdateDialog(context, result);
+        if (confirmed && context.mounted) {
+          await Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => UpdateDownloadScreen(
+                versionResult: result,
+                isMandatory: result.isMandatory,
+              ),
+            ),
+          );
+        }
       } else {
         await _showUpToDateDialog(context, result);
       }
@@ -92,7 +102,7 @@ class VersionService {
     }
   }
 
-  static Future<void> _showUpdateDialog(BuildContext context, VersionCheckResult r) async {
+  static Future<bool> _showUpdateDialog(BuildContext context, VersionCheckResult r) async {
     final mandatory = r.isMandatory;
     final contentParts = <String>[
       'Versi saat ini: ${r.currentVersion}',
@@ -102,7 +112,7 @@ class VersionService {
       if (r.releaseNotes != null && r.releaseNotes!.isNotEmpty) '\n${r.releaseNotes}',
     ];
 
-    await showDialog<void>(
+    final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: !mandatory,
       builder: (ctx) => PopScope(
@@ -113,23 +123,19 @@ class VersionService {
           actions: [
             if (!mandatory)
               TextButton(
-                onPressed: () => Navigator.of(ctx).pop(),
+                onPressed: () => Navigator.of(ctx).pop(false),
                 child: const Text('Nanti'),
               ),
             TextButton(
-              onPressed: () async {
-                final url = r.downloadUrl;
-                if (url != null && url.isNotEmpty) {
-                  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                }
-                if (!mandatory && ctx.mounted) Navigator.of(ctx).pop();
-              },
+              onPressed: () => Navigator.of(ctx).pop(true),
               child: const Text('Update'),
             ),
           ],
         ),
       ),
     );
+
+    return confirmed ?? false;
   }
 
   static Future<void> _showUpToDateDialog(BuildContext context, VersionCheckResult r) async {
