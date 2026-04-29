@@ -6,9 +6,9 @@ import '../services/sync_service.dart';
 import 'execution_form_screen.dart';
 
 class ExecutionDetailScreen extends StatefulWidget {
-  final String eqNumb;
+  final String scheduleId;
 
-  const ExecutionDetailScreen({super.key, required this.eqNumb});
+  const ExecutionDetailScreen({super.key, required this.scheduleId});
 
   @override
   State<ExecutionDetailScreen> createState() => _ExecutionDetailScreenState();
@@ -34,8 +34,8 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
     });
 
     try {
-      final execution = await ExecutionService.fetchExecutionByEqNumb(
-        widget.eqNumb,
+      final execution = await ExecutionService.fetchExecutionByScheduleId(
+        widget.scheduleId,
       );
 
       if (!mounted) return;
@@ -178,7 +178,7 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
     final execution = _execution;
 
     return Scaffold(
-      appBar: GradientAppBar(title: widget.eqNumb),
+      appBar: GradientAppBar(title: _execution?.eqNumb ?? widget.scheduleId),
       floatingActionButton: execution == null
           ? null
           : Row(

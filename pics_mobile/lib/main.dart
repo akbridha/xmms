@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'screens/landing_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

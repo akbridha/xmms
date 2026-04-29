@@ -105,12 +105,12 @@ class ExecutionService {
     throw Exception('Gagal memuat data setelah $_maxRetries percobaan');
   }
 
-  static Future<Execution> fetchExecutionByEqNumb(String eqNumb) async {
+  static Future<Execution> fetchExecutionByScheduleId(String scheduleId) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
         final uri = Uri.parse(_url).replace(
           queryParameters: {
-            'search_string': eqNumb,
+            'schedule_id': scheduleId,
           },
         );
 
@@ -127,15 +127,9 @@ class ExecutionService {
               .toList();
 
           if (executions.isEmpty) {
-            throw Exception('Data eksekusi tidak ditemukan untuk $eqNumb');
+            throw Exception('Data eksekusi tidak ditemukan untuk schedule $scheduleId');
           }
 
-          final exactMatch = executions.where((e) => e.eqNumb == eqNumb);
-          if (exactMatch.isNotEmpty) {
-            return exactMatch.first;
-          }
-
-          // Fallback to first item if backend returns partial matches only.
           return executions.first;
         } else {
           throw Exception(
@@ -167,6 +161,7 @@ class ExecutionService {
 
     throw Exception('Gagal memuat detail eksekusi setelah $_maxRetries percobaan');
   }
+
 
   static Future<FormDataResponse> fetchFormData({
     required String scheduleId,
