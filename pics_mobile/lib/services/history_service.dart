@@ -10,8 +10,8 @@ import '../models/history_detail.dart';
 class HistoryService {
   static String get _dataUrl =>
       '${AppConfig.host}${AppConfig.historyDataPath}';
-  static String _detailUrl(String eqNumb) =>
-      '${AppConfig.host}${AppConfig.historyDetailPath}?eqNumb=$eqNumb';
+  static String _detailUrl(String id) =>
+      '${AppConfig.host}${AppConfig.historyDetailPath}?id=$id';
 
   static const int _maxRetries = 3;
   static const Duration _timeout = Duration(seconds: 30);
@@ -95,8 +95,8 @@ class HistoryService {
     throw Exception('Gagal memuat data setelah $_maxRetries percobaan');
   }
 
-  static Future<List<HistoryDetail>> fetchHistoryDetail(String eqNumb) async {
-    final url = _detailUrl(eqNumb);
+  static Future<HistoryApiResponse> fetchHistoryDetail(String id) async {
+    final url = _detailUrl(id);
 
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
@@ -110,21 +110,15 @@ class HistoryService {
           debugPrint(
             '[HistoryService] Detail success! Status: ${response.statusCode}',
           );
-          final decoded = json.decode(response.body);
-
-          // Handle both list and single-object responses
-          if (decoded is List) {
-            return decoded
-                .map(
-                  (item) =>
-                      HistoryDetail.fromJson(item as Map<String, dynamic>),
-                )
-                .toList();
-          } else if (decoded is Map<String, dynamic>) {
-            return [HistoryDetail.fromJson(decoded)];
-          } else {
-            return [];
+          final decoded = json.decode(response.body) as Map<String, dynamic>;
+          if (decoded['success'] == true && decoded['data'] != null) {
+            return HistoryApiResponse.fromJson(
+              decoded['data'] as Map<String, dynamic>,
+            );
           }
+          throw Exception(
+            decoded['message']?.toString() ?? 'API returned success=false',
+          );
         } else {
           throw Exception(
             'HTTP ${response.statusCode}: ${response.reasonPhrase}',

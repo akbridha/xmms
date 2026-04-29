@@ -122,7 +122,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
                 child: FilterHeaderCard(
-                  title: 'Filter History',
+                  title: 'History',
                   subtitle: 'Pilih tanggal untuk fokus pada history yang relevan.',
                   icon: Icons.history_rounded,
                   child: Column(
@@ -268,10 +268,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ],
                           ),
                           onTap: () {
+                            if (history.id == null) return;
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(
                                 builder: (_) => HistoryDetailScreen(
+                                  id: history.id!,
                                   eqNumb: history.eqNumb,
                                 ),
                               ),
