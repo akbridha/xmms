@@ -5,6 +5,7 @@ import '../widgets/gradient_app_bar.dart';
 import 'schedule_screen.dart';
 import 'execution_screen.dart';
 import 'approval_screen.dart';
+import 'history_screen.dart';
 import 'landing_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -114,20 +115,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final menuItems = [
-      // _HomeMenuItem(
-      //   icon: Icons.calendar_month,
-      //   title: 'Jadwal',
-      //   description: 'Lihat jadwal inspeksi & maintenance',
-      //   color: Colors.blue,
-      //   onTap: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute<void>(
-      //         builder: (_) => const ScheduleScreen(),
-      //       ),
-      //     );
-      //   },
-      // ),
+      if (user.role == 'administrator')
+        _HomeMenuItem(
+          icon: Icons.calendar_month,
+          title: 'Jadwal',
+          description: 'Lihat jadwal inspeksi & maintenance',
+          color: Colors.blue,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const ScheduleScreen(),
+              ),
+            );
+          },
+        ),
       _HomeMenuItem(
         icon: Icons.build_circle,
         title: 'Eksekusi',
@@ -142,8 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
       ),
-      // Conditionally show Approval menu only for 'glup' type_user or 'administrator' role
-      if (user.jobRank == 'GROUP LEADER (SETARA)' || user.role == 'administrator')
+       if (user.jobRank == 'GROUP LEADER (SETARA)')
         _HomeMenuItem(
           icon: Icons.approval,
           title: 'Approval',
@@ -158,6 +159,22 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+     if (user.jobRank == 'GROUP LEADER (SETARA)')
+        _HomeMenuItem(
+          icon: Icons.history,
+          title: 'History',
+          description: 'Riwayat inspeksi & maintenance per unit',
+          color: Colors.teal,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const HistoryScreen(),
+              ),
+            );
+          },
+        ),
+     
     ];
 
     return Scaffold(

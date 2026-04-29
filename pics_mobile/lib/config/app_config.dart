@@ -26,7 +26,9 @@ class AppConfig {
   // static const String host = 'http://192.168.8.115:9090/api';
   static const String host = 'https://app-saptaindra.msappproxy.net/PlantAdmo/api';
 
-
+  // History API paths
+  static const String historyDataPath = '/history/data';
+  static const String historyDetailPath = '/history/detail';
 
   static const List<String> sections = [
     'PLANT PRIME MOVER',
