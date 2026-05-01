@@ -12,7 +12,8 @@ import 'local_storage_service.dart';
 import 'sync_service.dart';
 
 class ExecutionService {
-  static String get _url => '${AppConfig.host}/execution/data'; /*dipakai ketika bukan execution index*/
+  static String get _url => '${AppConfig.host}/execution'; /*dipakai ketika ingin mengambil daftar eksekusi*/
+  static String get _urlDetail => '${AppConfig.host}/execution/data'; /*dipakai ketika ingin mengambil data eksekusi tertentu*/
   static String get _formUrl => '${AppConfig.host}/execution/form'; /*dipakai ketika ingin mengambil form untuk diisi sekaligus claim.*/
   static String get _formDataUrl => '${AppConfig.host}/execution/form/data'; /*endpoint baru untuk mengambil form dengan history*/
   static String get _formSaveUrl => '${AppConfig.host}/execution/form/save';
@@ -108,7 +109,7 @@ class ExecutionService {
   static Future<Execution> fetchExecutionByScheduleId(String scheduleId) async {
     for (int attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-        final uri = Uri.parse(_url).replace(
+        final uri = Uri.parse(_urlDetail).replace(
           queryParameters: {
             'schedule_id': scheduleId,
           },
@@ -121,7 +122,9 @@ class ExecutionService {
         final response = await http.get(uri).timeout(_timeout);
 
         if (response.statusCode == 200) {
-          final List<dynamic> jsonList = json.decode(response.body);
+          final Map<String, dynamic> jsonMap =
+              json.decode(response.body) as Map<String, dynamic>;
+          final List<dynamic> jsonList = jsonMap['data'] as List<dynamic>;
           final executions = jsonList
               .map((j) => Execution.fromJson(j as Map<String, dynamic>))
               .toList();

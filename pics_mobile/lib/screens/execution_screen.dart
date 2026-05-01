@@ -363,7 +363,7 @@ class _ExecutionScreenState extends State<ExecutionScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${execution.date} • POC: ${execution.fulfilledPocCount}/${execution.targetPocCount} ',
+                            '${execution.date} • POC: ${execution.fulfilledPocCount}/${execution.targetPocCount}   ${execution.scheduleId}',
                           ),
                           const SizedBox(height: 6),
                           _buildPocStatusIcons(execution),

@@ -4,6 +4,7 @@ import '../widgets/gradient_app_bar.dart';
 import '../services/execution_service.dart';
 import '../services/sync_service.dart';
 import 'execution_form_screen.dart';
+import 'dart:developer' as log;
 
 class ExecutionDetailScreen extends StatefulWidget {
   final String scheduleId;
@@ -23,6 +24,7 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
 
   @override
   void initState() {
+    log.log('Loading execution detail for scheduleId: ${widget.scheduleId}');
     super.initState();
     _loadExecutionDetail();
   }
@@ -101,6 +103,7 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
       );
     } catch (e) {
       if (!mounted) return;
+      log.log('Error occurred while syncing: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error saat sinkronisasi: $e'),
@@ -239,6 +242,8 @@ class _ExecutionDetailScreenState extends State<ExecutionDetailScreen> {
     }
 
     final pocStatus = execution.partOfCheckStatus.entries.toList();
+
+    log.log(pocStatus.map((e) => '${e.key}: ${e.value}').join(', '));
 
     return ListView(
       padding: const EdgeInsets.all(16),
