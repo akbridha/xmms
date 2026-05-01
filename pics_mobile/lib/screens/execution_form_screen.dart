@@ -76,6 +76,15 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
     
     // Update last interaction time
     _lastInteractionTime = now;
+
+    TopRightNotification.show(
+      context,
+      title: "Inspeksi Tercatat",
+      subtitle: '${item.detailsItems}: ${(duration / 1000).round()} detik ',
+      duration: const Duration(seconds: 4),
+    );
+
+    // int seconds = (duration / 1000).round();
     
     debugPrint(
       '[Timer] Item ${item.id} (${item.detailsItems}): ${duration}ms '
@@ -254,30 +263,30 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
           ),
         ),
 
-        Positioned(
-          top: MediaQuery.of(context).padding.top + 8,
-          right: 12,
-          child: SafeArea(
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                elevation: 6,
-              ),
-              icon: const Icon(Icons.notifications, size: 18, color: Colors.white),
-              label: const Text('Notify', style: TextStyle(color: Colors.white)),
-              onPressed: () {
-                TopRightNotification.show(
-                  context,
-                  title: _isEditMode ? 'Mode Edit' : 'Notifikasi',
-                  subtitle: 'Contoh notifikasi slide-in',
-                  duration: const Duration(seconds: 4),
-                );
-              },
-            ),
-          ),
-        ),
+        // Positioned(
+        //   top: MediaQuery.of(context).padding.top + 8,
+        //   right: 12,
+        //   child: SafeArea(
+        //     child: ElevatedButton.icon(
+        //       style: ElevatedButton.styleFrom(
+        //         backgroundColor: Theme.of(context).colorScheme.primary,
+        //         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        //         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        //         elevation: 6,
+        //       ),
+        //       icon: const Icon(Icons.notifications, size: 18, color: Colors.white),
+        //       label: const Text('Notify', style: TextStyle(color: Colors.white)),
+        //       onPressed: () {
+        //         TopRightNotification.show(
+        //           context,
+        //           title: _isEditMode ? 'Mode Edit' : 'Notifikasi',
+        //           subtitle: 'Contoh notifikasi slide-in',
+        //           duration: const Duration(seconds: 4),
+        //         );
+        //       },
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }
@@ -412,6 +421,7 @@ class _ExecutionFormScreenState extends State<ExecutionFormScreen> {
             selected: selected,
             onSelected: (_) {
               setState(() {
+
                 // Record duration from last interaction to now
                 _recordInteraction(item);
                 

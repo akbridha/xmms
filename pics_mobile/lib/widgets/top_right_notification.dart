@@ -126,7 +126,7 @@ class _TopRightToastState extends State<_TopRightToast>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.notifications, color: Colors.white),
+                    const Icon(Icons.check_circle, color: Colors.white),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
