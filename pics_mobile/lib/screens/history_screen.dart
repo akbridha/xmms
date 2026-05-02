@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import '../models/history.dart';
 import '../services/history_service.dart';
 import '../widgets/filter_header_card.dart';
 import '../widgets/gradient_app_bar.dart';
 import 'history_detail_screen.dart';
+import 'dart:developer'as cetak;
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -268,12 +271,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ],
                           ),
                           onTap: () {
-                            if (history.id == null) return;
+                            // if (history.schedule_id == null) return;
+                            // cetak.log("on tap listview history schedule_id: ${history.schedule_id}");
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(
                                 builder: (_) => HistoryDetailScreen(
-                                  id: history.id!,
+                                  id: history.schedule_id!,
                                   eqNumb: history.eqNumb,
                                 ),
                               ),

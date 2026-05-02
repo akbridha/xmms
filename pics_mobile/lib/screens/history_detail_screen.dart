@@ -6,7 +6,7 @@ import '../widgets/gradient_app_bar.dart';
 class HistoryDetailScreen extends StatefulWidget {
   const HistoryDetailScreen({super.key, required this.id, this.eqNumb});
 
-  final int id;
+  final String id;
   final String? eqNumb;
 
   @override
@@ -136,6 +136,7 @@ class _EquipmentHeaderCard extends StatelessWidget {
                     ),
                   ),
                 ),
+                const Icon(Icons.description, color: Colors.white, size: 20), 
               ],
             ),
             const SizedBox(height: 6),

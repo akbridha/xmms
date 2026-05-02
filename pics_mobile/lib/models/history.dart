@@ -3,14 +3,14 @@ class History {
   final String date;
   final String? status;
   final String? section;
-  final int? id;
+  final String? schedule_id;
 
   History({
     required this.eqNumb,
     required this.date,
     this.status,
     this.section,
-    this.id,
+    this.schedule_id,
   });
 
   factory History.fromJson(Map<String, dynamic> json) {
@@ -19,7 +19,7 @@ class History {
       date: (json['date'] ?? '').toString(),
       status: json['status']?.toString(),
       section: json['section']?.toString(),
-      id: json['id'] is int ? json['id'] as int : null,
+      schedule_id: json['schedule_id']?.toString(),
     );
   }
 }

@@ -29,6 +29,7 @@ class AppConfig {
   // History API paths
   static const String historyDataPath = '/history/data';
   static const String historyDetailPath = '/history/detail';
+  // static const String historyDetailPath = '/history/detail-by-month';
 
   static const List<String> sections = [
     'PLANT PRIME MOVER',

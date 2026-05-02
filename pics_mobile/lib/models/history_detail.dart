@@ -43,7 +43,7 @@ class HistoryApiResponse {
 
 class HistoryDetailItem {
   final int idResult;
-  final int scheduleId;
+  final String scheduleId;
   final String poc;
   final String startTime;
   final String endTime;
@@ -100,7 +100,7 @@ class HistoryDetailItem {
     }
     return HistoryDetailItem(
       idResult: (json['id_result'] as num?)?.toInt() ?? 0,
-      scheduleId: (json['schedule_id'] as num?)?.toInt() ?? 0,
+      scheduleId:(json['schedule_id'] ?? '').toString(),
       poc: (json['poc'] ?? '').toString(),
       startTime: (json['start_time'] ?? '').toString(),
       endTime: (json['end_time'] ?? '').toString(),
