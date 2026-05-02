@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/history_detail.dart';
 import '../services/history_service.dart';
 import '../widgets/gradient_app_bar.dart';
+import 'dart:developer' as developer;
 
 class HistoryDetailScreen extends StatefulWidget {
   const HistoryDetailScreen({super.key, required this.id, this.eqNumb});
@@ -82,7 +83,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
             padding: const EdgeInsets.all(12),
             children: [
               // Equipment header
-              _EquipmentHeaderCard(response: response),
+              _EquipmentHeaderCard(response: response, id: widget.id.toString(),),
               const SizedBox(height: 8),
 
               if (byDate.isEmpty)
@@ -109,8 +110,9 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 // ─── Equipment header ────────────────────────────────────────────────────────
 
 class _EquipmentHeaderCard extends StatelessWidget {
-  const _EquipmentHeaderCard({required this.response});
+  const _EquipmentHeaderCard({required this.response, required this.id});
   final HistoryApiResponse response;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +128,7 @@ class _EquipmentHeaderCard extends StatelessWidget {
               children: [
                 const Icon(Icons.construction, color: Colors.teal, size: 20),
                 const SizedBox(width: 8),
-                Expanded(
+                Expanded( 
                   child: Text(
                     response.equipmentCode,
                     style: const TextStyle(
@@ -136,7 +138,27 @@ class _EquipmentHeaderCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Icon(Icons.description, color: Colors.white, size: 20), 
+                IconButton(
+                  icon: const Icon(
+                    Icons.description, 
+                    color: Colors.white, 
+                    size: 40,
+                  ), 
+                  onPressed: ()async {
+                    developer.log('Cetak detail history');
+                    try {
+                      await HistoryService.downloadFile(id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Download berhasil')),
+                      );
+                    } catch (e) {
+                      developer.log('Error saat download: $e');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Gagal download: $e')),
+                      );
+                    }
+                    
+                  },)
               ],
             ),
             const SizedBox(height: 6),
