@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pics_mobile/services/pdf_service.dart';
 import '../models/history_detail.dart';
 import '../services/history_service.dart';
 import '../widgets/gradient_app_bar.dart';
 import 'dart:developer' as developer;
+import '../services/file_service.dart';
 
 class HistoryDetailScreen extends StatefulWidget {
   const HistoryDetailScreen({super.key, required this.id, this.eqNumb});
@@ -147,7 +149,13 @@ class _EquipmentHeaderCard extends StatelessWidget {
                   onPressed: ()async {
                     developer.log('Cetak detail history');
                     try {
-                      await HistoryService.downloadFile(id);
+                      // await FileService.downloadFile(id);
+
+                      final data = [1,2,3,4,5,6,7,8,9,10];
+                      final pdfBytes = await PdfService.generatePdfFromList(data);
+                      await FileService.savePdf(pdfBytes);
+
+                      
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Download berhasil')),
                       );
