@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pics_mobile/services/history_print_service.dart';
 import 'package:pics_mobile/services/pdf_service.dart';
 import '../models/history_detail.dart';
 import '../services/history_service.dart';
@@ -151,362 +152,367 @@ class _EquipmentHeaderCard extends StatelessWidget {
                     try {
                       // await FileService.downloadFile(id);
 
-                      final data = [
-                        {
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-15 16:16:37",
-                          "poc": "BAGIAN BAWAH"
-                        },
-                        {
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-16 16:16:37",
-                          "poc": "BAGIAN ATAS"
-                        },
-                        {
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-17 16:16:37",
-                          "poc": "HUB DRUM"
-                        },
-                        {
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-17 16:16:37",
-                          "poc": "TEMPERATURE"
-                        },
-                        {
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-17 16:16:37",
-                          "poc": "VIBRATION"
-                        },
-                        {
-                          "id_result": 51083,
-                          "schedule_id": 67137,
-                          "result_ids": [51083, 51084, 51085, 51086, 51087, 51088, 51089, 51090, 51091, 51092, 51093, 51094, 51095, 51096, 51097, 51098, 51099, 51100, 51101, 51102, 51103, 51104, 51105, 51106, 51107, 51108, 51109, 51110, 51111, 51112],
-                          "section": "PLANT PRIME MOVER",
-                          "code_unit": "HT140-0373",
-                          "actual_end_time": "2026-04-15 16:16:37",
-                          "poc": "BAGIAN BAWAH",
-                          "hm_km": null,
-                          "nrp_name": "{\"nrp\":\"0115118\",\"nama\":\"EKO BUDIANTO\"}",
-                          "start_time": "2026-04-15 17:05:20",
-                          "end_time": "2026-04-26 11:39:39",
-                          "status": "finish",
-                          "data": {
-                            "BAGIAN BAWAH": [
-                              [
-                                "ENGINE",
-                                [
-                                  [
-                                    "193",
-                                    {
-                                      "details_items": "Fuel Filter and Housing",
-                                      "activity": "Check",
-                                      "value": "no leak fuel, no crack"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "194",
-                                    {
-                                      "details_items": "Stay and Bolt Bottom Guard",
-                                      "activity": "Check",
-                                      "value": "Condition"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "195",
-                                    {
-                                      "details_items": "Oil Sump",
-                                      "activity": "Check",
-                                      "value": "no leak, no crack"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "196",
-                                    {
-                                      "details_items": "Mounting Starting Motor",
-                                      "activity": "Check",
-                                      "value": "condition"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "192",
-                                    {
-                                      "details_items": "Filter Oil ",
-                                      "activity": "Check",
-                                      "value": "condition"
-                                    },
-                                    "o",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "CLUTCH",
-                                [
-                                  [
-                                    "233",
-                                    {
-                                      "details_items": "Stroke Clutch",
-                                      "activity": "Measure",
-                                      "value": "mm"
-                                    },
-                                    "25",
-                                    0],
-                                  [
-                                    "231",
-                                    {
-                                      "details_items": "Basic Clutch",
-                                      "activity": "Measure",
-                                      "value": "mm"
-                                    },
-                                    "25",
-                                    0],
-                                  [
-                                    "293",
-                                    {
-                                      "details_items": "erg",
-                                      "activity": "Add",
-                                      "value": "\u003C 0.2 mm"
-                                    },
-                                    "V",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "AIR SYSTEM",
-                                [
-                                  [
-                                    "230",
-                                    {
-                                      "details_items": "Chamber Brake",
-                                      "activity": "Check",
-                                      "value": "no leak no crack"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "229",
-                                    {
-                                      "details_items": "Hose ",
-                                      "activity": "Check",
-                                      "value": "festo max 2 per meter"
-                                    },
-                                    "o",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "OTHER ATTACHMENT",
-                                [
-                                  [
-                                    "227",
-                                    {
-                                      "details_items": "Hydraulic Hose",
-                                      "activity": "Check",
-                                      "value": "no leak, no crack"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "226",
-                                    {
-                                      "details_items": "PTO and Hydraulic Pump",
-                                      "activity": "Check",
-                                      "value": "no leak, no crack"
-                                    },
-                                    "o",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "TRANSMISSION",
-                                [
-                                  [
-                                    "208",
-                                    {
-                                      "details_items": "Seal Output Transmisi",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "207",
-                                    {
-                                      "details_items": "Oil Level Transmisi",
-                                      "activity": "Check",
-                                      "value": "level"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "206",
-                                    {
-                                      "details_items": "Servo Clutch",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "205",
-                                    {
-                                      "details_items": "Oil Cooler and Hose",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "203",
-                                    {
-                                      "details_items": "Air Syestem T/M",
-                                      "activity": "Check",
-                                      "value": "condition"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "204",
-                                    {
-                                      "details_items": "Balancer Shaft",
-                                      "activity": "Check",
-                                      "value": "no Worn"
-                                    },
-                                    "o",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "STEERING",
-                                [
-                                  [
-                                    "198",
-                                    {
-                                      "details_items": "Shaft Steering",
-                                      "activity": "Check",
-                                      "value": "condition"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "199",
-                                    {
-                                      "details_items": "Drag Link",
-                                      "activity": "Check",
-                                      "value": "no worn (Max. 2 mm)"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "200",
-                                    {
-                                      "details_items": "Tie Rod",
-                                      "activity": "Check",
-                                      "value": "no worn (Max. 2 mm)"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "201",
-                                    {
-                                      "details_items": "Stay Stabilizer",
-                                      "activity": "Check",
-                                      "value": "no worn (Max. 2 mm)"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "202",
-                                    {
-                                      "details_items": "Steering and Fuel Pump",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0]
-                                ]
-                              ],
-                              [
-                                "UNDERCARRIAGE",
-                                [
-                                  [
-                                    "224",
-                                    {
-                                      "details_items": "Bushing Spring front and rear rh/lh",
-                                      "activity": "Check",
-                                      "value": "no worn"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "212",
-                                    {
-                                      "details_items": "Propeller Shaft Rear",
-                                      "activity": "Measure Cross Joint",
-                                      "value": "\u003C 0.2 mm"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "214",
-                                    {
-                                      "details_items": "Seal Input Differential Front",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "215",
-                                    {
-                                      "details_items": "Seal Output Differential Front",
-                                      "activity": "Check",
-                                      "value": "no leak"
-                                    },
-                                    "o",
-                                    0],
-                                  [
-                                    "217",
-                                    {
-                                      "details_items": "Linning Brake",
-                                      "activity": "Check",
-                                      "value": "condition"
-                                    },
-                                    "x",
-                                    0],
-                                  [
-                                    "218",
-                                    {
-                                      "details_items": "Suhu Front Hub ",
-                                      "activity": "Check",
-                                      "value": "\u003C 77 Â°C"
-                                    },
-                                    "x",
-                                    0],
-                                  [
-                                    "222",
-                                    {
-                                      "details_items": "Slack Adjuster",
-                                      "activity": "Check",
-                                      "value": "no loose, no broken"
-                                    },
-                                    "x",
-                                    0]
-                                ]
-                              ]
-                            ]
-                          },
-                          "validation_by": "0115118",
-                          "validator_name": "EKO BUDIANTO",
-                          "validation_time": "2026-04-26 11:39:39"
-                        },
-                      ];
-
+                      // final data = [
+                      //   {
+                      //     "code_unit": "HT140-1373",
+                      //     "actual_end_time": "2026-04-15 16:16:37",
+                      //     "poc": "BAGIAN BAWAH"
+                      //   },
+                      //   {
+                      //     "code_unit": "HT140-0373",
+                      //     "actual_end_time": "2026-04-16 16:16:37",
+                      //     "poc": "BAGIAN ATAS"
+                      //   },
+                      //   {
+                      //     "code_unit": "HT140-0373",
+                      //     "actual_end_time": "2026-04-17 16:16:37",
+                      //     "poc": "HUB DRUM"
+                      //   },
+                      //   {
+                      //     "code_unit": "HT140-0373",
+                      //     "actual_end_time": "2026-04-17 16:16:37",
+                      //     "poc": "TEMPERATURE"
+                      //   },
+                      //   {
+                      //     "code_unit": "HT140-0373",
+                      //     "actual_end_time": "2026-04-17 16:16:37",
+                      //     "poc": "VIBRATION"
+                      //   },
+                      //   {
+                      //     "id_result": 51083,
+                      //     "schedule_id": 67137,
+                      //     "result_ids": [51083, 51084, 51085, 51086, 51087, 51088, 51089, 51090, 51091, 51092, 51093, 51094, 51095, 51096, 51097, 51098, 51099, 51100, 51101, 51102, 51103, 51104, 51105, 51106, 51107, 51108, 51109, 51110, 51111, 51112],
+                      //     "section": "PLANT PRIME MOVER",
+                      //     "code_unit": "HT140-0373",
+                      //     "actual_end_time": "2026-04-15 16:16:37",
+                      //     "poc": "BAGIAN BAWAH",
+                      //     "hm_km": null,
+                      //     "nrp_name": "{\"nrp\":\"0115118\",\"nama\":\"EKO BUDIANTO\"}",
+                      //     "start_time": "2026-04-15 17:05:20",
+                      //     "end_time": "2026-04-26 11:39:39",
+                      //     "status": "finish",
+                      //     "data": {
+                      //       "BAGIAN BAWAH": [
+                      //         [
+                      //           "ENGINE",
+                      //           [
+                      //             [
+                      //               "193",
+                      //               {
+                      //                 "details_items": "Fuel Filter and Housing",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak fuel, no crack"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "194",
+                      //               {
+                      //                 "details_items": "Stay and Bolt Bottom Guard",
+                      //                 "activity": "Check",
+                      //                 "value": "Condition"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "195",
+                      //               {
+                      //                 "details_items": "Oil Sump",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak, no crack"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "196",
+                      //               {
+                      //                 "details_items": "Mounting Starting Motor",
+                      //                 "activity": "Check",
+                      //                 "value": "condition"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "192",
+                      //               {
+                      //                 "details_items": "Filter Oil ",
+                      //                 "activity": "Check",
+                      //                 "value": "condition"
+                      //               },
+                      //               "o",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "CLUTCH",
+                      //           [
+                      //             [
+                      //               "233",
+                      //               {
+                      //                 "details_items": "Stroke Clutch",
+                      //                 "activity": "Measure",
+                      //                 "value": "mm"
+                      //               },
+                      //               "25",
+                      //               0],
+                      //             [
+                      //               "231",
+                      //               {
+                      //                 "details_items": "Basic Clutch",
+                      //                 "activity": "Measure",
+                      //                 "value": "mm"
+                      //               },
+                      //               "25",
+                      //               0],
+                      //             [
+                      //               "293",
+                      //               {
+                      //                 "details_items": "erg",
+                      //                 "activity": "Add",
+                      //                 "value": "\u003C 0.2 mm"
+                      //               },
+                      //               "V",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "AIR SYSTEM",
+                      //           [
+                      //             [
+                      //               "230",
+                      //               {
+                      //                 "details_items": "Chamber Brake",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak no crack"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "229",
+                      //               {
+                      //                 "details_items": "Hose ",
+                      //                 "activity": "Check",
+                      //                 "value": "festo max 2 per meter"
+                      //               },
+                      //               "o",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "OTHER ATTACHMENT",
+                      //           [
+                      //             [
+                      //               "227",
+                      //               {
+                      //                 "details_items": "Hydraulic Hose",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak, no crack"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "226",
+                      //               {
+                      //                 "details_items": "PTO and Hydraulic Pump",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak, no crack"
+                      //               },
+                      //               "o",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "TRANSMISSION",
+                      //           [
+                      //             [
+                      //               "208",
+                      //               {
+                      //                 "details_items": "Seal Output Transmisi",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "207",
+                      //               {
+                      //                 "details_items": "Oil Level Transmisi",
+                      //                 "activity": "Check",
+                      //                 "value": "level"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "206",
+                      //               {
+                      //                 "details_items": "Servo Clutch",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "205",
+                      //               {
+                      //                 "details_items": "Oil Cooler and Hose",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "203",
+                      //               {
+                      //                 "details_items": "Air Syestem T/M",
+                      //                 "activity": "Check",
+                      //                 "value": "condition"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "204",
+                      //               {
+                      //                 "details_items": "Balancer Shaft",
+                      //                 "activity": "Check",
+                      //                 "value": "no Worn"
+                      //               },
+                      //               "o",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "STEERING",
+                      //           [
+                      //             [
+                      //               "198",
+                      //               {
+                      //                 "details_items": "Shaft Steering",
+                      //                 "activity": "Check",
+                      //                 "value": "condition"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "199",
+                      //               {
+                      //                 "details_items": "Drag Link",
+                      //                 "activity": "Check",
+                      //                 "value": "no worn (Max. 2 mm)"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "200",
+                      //               {
+                      //                 "details_items": "Tie Rod",
+                      //                 "activity": "Check",
+                      //                 "value": "no worn (Max. 2 mm)"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "201",
+                      //               {
+                      //                 "details_items": "Stay Stabilizer",
+                      //                 "activity": "Check",
+                      //                 "value": "no worn (Max. 2 mm)"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "202",
+                      //               {
+                      //                 "details_items": "Steering and Fuel Pump",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0]
+                      //           ]
+                      //         ],
+                      //         [
+                      //           "UNDERCARRIAGE",
+                      //           [
+                      //             [
+                      //               "224",
+                      //               {
+                      //                 "details_items": "Bushing Spring front and rear rh/lh",
+                      //                 "activity": "Check",
+                      //                 "value": "no worn"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "212",
+                      //               {
+                      //                 "details_items": "Propeller Shaft Rear",
+                      //                 "activity": "Measure Cross Joint",
+                      //                 "value": "\u003C 0.2 mm"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "214",
+                      //               {
+                      //                 "details_items": "Seal Input Differential Front",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "215",
+                      //               {
+                      //                 "details_items": "Seal Output Differential Front",
+                      //                 "activity": "Check",
+                      //                 "value": "no leak"
+                      //               },
+                      //               "o",
+                      //               0],
+                      //             [
+                      //               "217",
+                      //               {
+                      //                 "details_items": "Linning Brake",
+                      //                 "activity": "Check",
+                      //                 "value": "condition"
+                      //               },
+                      //               "x",
+                      //               0],
+                      //             [
+                      //               "218",
+                      //               {
+                      //                 "details_items": "Suhu Front Hub ",
+                      //                 "activity": "Check",
+                      //                 "value": "\u003C 77 Â°C"
+                      //               },
+                      //               "x",
+                      //               0],
+                      //             [
+                      //               "222",
+                      //               {
+                      //                 "details_items": "Slack Adjuster",
+                      //                 "activity": "Check",
+                      //                 "value": "no loose, no broken"
+                      //               },
+                      //               "x",
+                      //               0]
+                      //           ]
+                      //         ]
+                      //       ]
+                      //     },
+                      //     "validation_by": "0115118",
+                      //     "validator_name": "EKO BUDIANTO",
+                      //     "validation_time": "2026-04-26 11:39:39"
+                      //   },
+                      // ];
+                      final data = await HistoryPrintService().getHistoryPrints(
+                        scheduleId: id,
+                        unitCode: response.equipmentCode,
+                      );
                       final pdfBytes = await PdfService.generatePdfFromList(data);
                       await FileService.savePdf(pdfBytes);
+
+                      developer.log(data.toString());
 
                       
                       ScaffoldMessenger.of(context).showSnackBar(
