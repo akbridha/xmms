@@ -14,5 +14,8 @@
                 "MYSQL_DATABASE": "db_pltmp_doc"
             }
         }
-    }
+    },
+    "dart.flutterSdkPath": "D:\\flutter",
+    "dart.sdkPath": "C:\\flutter\\bin\\cache\\dart-sdk"
 }
+
