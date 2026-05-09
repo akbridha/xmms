@@ -667,6 +667,51 @@ class _PocCard extends StatelessWidget {
         ),
         children: [
           const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Riwayat inspeksi',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.teal.shade700,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  runSpacing: 8,
+                  spacing: 8,
+                  children: [
+                    _InfoChip(
+                      icon: Icons.play_circle_outline,
+                      label: _fmtDateTime(item.startTime),
+                      color: Colors.greenAccent,
+                    ),
+                    _InfoChip(
+                      icon: Icons.stop_circle_outlined,
+                      label: _fmtDateTime(item.endTime),
+                      color: Colors.orangeAccent,
+                    ),
+                    if (item.inspectorName != null)
+                      _InfoChip(
+                        icon: Icons.person,
+                        label: '${item.inspectorName} (${item.inspectorNrp ?? '-'})',
+                        color: Colors.blue.shade300,
+                      ),
+                    if (item.validatorName != null)
+                      _InfoChip(
+                        icon: Icons.verified,
+                        label: item.validatorName!,
+                        color: Colors.purple.shade300,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
           for (final cat in categories) _CategorySection(category: cat),
         ],
       ),
